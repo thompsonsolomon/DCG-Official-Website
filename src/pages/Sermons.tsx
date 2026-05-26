@@ -60,8 +60,10 @@ export const Sermons = () => {
               }
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2">{sermon.SermonTitle}</h3>
-                  <p className="text-gray-600 mb-2"><strong>Speaker:</strong> {sermon.preacher}</p>
+                  <p className="text-[#008080] mb-2"><strong>Speaker:</strong> {sermon.preacher}</p>
                   <p className="text-gray-600 mb-4"><strong>Topic:</strong> {sermon.SermonTitle}</p>
+                                      <p className="text-gray-600 mb-2 max-w-xs truncate"> <strong>Description: </strong>{sermon.description}</p>
+
                   <p className="text-sm text-gray-500">{new Date(sermon.date).toLocaleDateString()}</p>
                 </div>
               </div>

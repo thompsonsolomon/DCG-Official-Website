@@ -31,6 +31,7 @@ import NotFound from './pages/NotFound'
 import AdminLogin from './pages/AdminLogin'
 import ProtectedRoute from './config/ProtectedRoute'
 import PWAInstall from './components/PWAInstall'
+import { EventDetails } from './pages/EventDetails'
 
 // Layout
 
@@ -43,6 +44,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetails />} />
           <Route path="/sermons" element={<Sermons />} />
           <Route path="/sermons/:id" element={<SermonDetails />} />
           <Route path="/gallery" element={<Gallery />} />

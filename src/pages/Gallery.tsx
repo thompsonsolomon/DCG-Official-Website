@@ -52,18 +52,11 @@ export const Gallery = () => {
                   <img
                     src={item.imageUrl}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    className="w-full h-full cursor-zoom-in object-cover group-hover:scale-110 transition-transform duration-300"
                   />
 
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                  <div className="absolute cursor-zoom-in inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
 
-                    <svg
-                      className="w-14 h-14 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                    </svg>
 
                   </div>
                 </div>

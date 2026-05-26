@@ -1,19 +1,67 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useState } from 'react'
+import {
+  LayoutDashboard,
+  Zap,
+  CalendarDays,
+  Mic2,
+  Newspaper,
+  Images,
+  MessageSquareHeart,
+  Mail,
+} from 'lucide-react'
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+const menuItems = [
+  {
+    label: 'Dashboard',
+    path: '/admin',
+    icon: <LayoutDashboard size={20} />,
+  },
 
-  const menuItems = [
-    { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Actions', path: '/admin/actions', icon: '⚡' },
-    { label: 'Events', path: '/admin/events', icon: '📅' },
-    { label: 'Sermons', path: '/admin/sermons', icon: "" },
-    { label: 'Blog', path: '/admin/blog' },
-    { label: 'Gallery', path: '/admin/gallery' },
-    { label: 'Testimonies', path: '/admin/testimonies' },
-    { label: 'Messages', path: '/admin/messages' }
-  ]
+  {
+    label: 'Actions',
+    path: '/admin/actions',
+    icon: <Zap size={20} />,
+  },
+
+  {
+    label: 'Events',
+    path: '/admin/events',
+    icon: <CalendarDays size={20} />,
+  },
+
+  {
+    label: 'Sermons',
+    path: '/admin/sermons',
+    icon: <Mic2 size={20} />,
+  },
+
+  {
+    label: 'Blog',
+    path: '/admin/blog',
+    icon: <Newspaper size={20} />,
+  },
+
+  {
+    label: 'Gallery',
+    path: '/admin/gallery',
+    icon: <Images size={20} />,
+  },
+
+  {
+    label: 'Testimonies',
+    path: '/admin/testimonies',
+    icon: <MessageSquareHeart size={20} />,
+  },
+
+  {
+    label: 'Messages',
+    path: '/admin/messages',
+    icon: <Mail size={20} />,
+  },
+]
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -37,7 +85,8 @@ export const AdminLayout = () => {
               className={`flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent transition `}
             >
               <span className="text-xl">{item.icon}</span>
-              {sidebarOpen && <span>{item.label}</span>}
+
+              { sidebarOpen && item.label}
             </Link>
           ))}
         </nav>

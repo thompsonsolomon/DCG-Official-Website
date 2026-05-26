@@ -3,9 +3,11 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 const images = [
+  "/asset/bg/8.jpg",  
   "/asset/bg/19.jpg",
   "/asset/bg/20.jpg",
-  "/asset/bg/21.jpg",
+  "/asset/bg/11.jpg",
+  "/asset/bg/10.jpg",
 ]
 
 export default function DefaultHero() {

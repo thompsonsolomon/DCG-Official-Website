@@ -87,14 +87,14 @@ function WelcomMessage() {
         {/* Main Image */}
         <div className="relative w-[260px] sm:w-[320px] md:w-[380px] lg:w-[440px] 
                         h-[320px] sm:h-[380px] md:h-[440px] lg:h-[520px] 
-                        shadow-2xl overflow-hidden">
+                         overflow-hidden">
           <img
             src="/asset/bg/dad.jpg"
             alt="Pastor"
             className="w-full h-full object-cover rounded-bgg"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent"></div>
+          {/* <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent"></div> */}
         </div>
 
         {/* Floating Image */}

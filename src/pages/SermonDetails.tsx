@@ -32,7 +32,7 @@ export const SermonDetails = () => {
       {/* Breadcrumb */}
       <Breadcrumb
         title={sermon.SermonTitle}
-        backgroundImage="/asset/bg/1.jpg"
+        backgroundImage={sermon.Imgurl || '/asset/bg/3.jpg'}
         breadcrumbs={[
           { label: "Home", path: "/" },
           { label: "Sermons", path: "/sermons" },
@@ -83,6 +83,12 @@ export const SermonDetails = () => {
               <p className="text-gray-600">
                 <strong>Topic:</strong> {sermon.topic}
               </p>
+
+               <p className="text-gray-600 mb-2 leading-relaxed whitespace-pre-line">
+                 <strong>Description: </strong> <br />
+                 {sermon.description}
+                 </p>
+
 
               <p className="text-gray-500 text-sm">
                 {new Date(sermon.date || Date.now()).toLocaleDateString()}

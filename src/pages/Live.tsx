@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Breadcrumb from '@/UI/Breadcrum'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/config/firebase'
+import { Link } from 'react-router-dom'
 
 type LiveSettings = {
   isLive: boolean
@@ -27,7 +28,7 @@ export const Live = () => {
       (snapshot) => {
         if (snapshot.exists()) {
           setSettings(snapshot.data() as LiveSettings)
-
+          console.log('Live settings updated:', snapshot.data())
         }
       }
     )
@@ -158,7 +159,7 @@ export const Live = () => {
               </p>
 
               <p className="text-sm font-semibold text-[#008080]">
-                Wednesdays • 7:00 PM
+                Fridays • 5:00 PM
               </p>
             </div>
           </div>
@@ -246,13 +247,13 @@ export const Live = () => {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
-              <button className="bg-white text-[#008080] px-8 py-3 rounded-2xl font-bold hover:scale-105 transition">
+              <Link to="https://www.youtube.com/@discipleschurchofgod" className="bg-white text-[#008080] px-8 py-3 rounded-2xl font-bold hover:scale-105 transition">
                 Watch Live
-              </button>
+              </Link>
 
-              <button className="border border-white text-white px-8 py-3 rounded-2xl font-bold hover:bg-white hover:text-[#008080] transition">
+              <Link to="https://www.youtube.com/@discipleschurchofgod" className="border border-white text-white px-8 py-3 rounded-2xl font-bold hover:bg-white hover:text-[#008080] transition">
                 Share Stream
-              </button>
+              </Link>
             </div>
           </div>
 

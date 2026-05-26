@@ -6,6 +6,8 @@ const images = [
   "/asset/bg/1.jpg",
   "/asset/bg/2.jpg",
   "/asset/bg/3.jpg",
+  "/asset/bg/4.jpg",
+  "/asset/bg/9.jpg",
 ]
 
 export function ConventionHero() {
@@ -22,7 +24,7 @@ export function ConventionHero() {
 
   return (
     <div className="relative h-[90vh] w-full overflow-hidden">
-      
+
       {/* BACKGROUND SLIDER */}
       <div className="absolute inset-0">
         {images.map((img, i) => (
@@ -46,7 +48,7 @@ export function ConventionHero() {
 
       {/* CONTENT */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center h-full px-4">
-        
+
         {/* TITLE */}
         <motion.h1
           initial={{ opacity: 0, y: 40 }}

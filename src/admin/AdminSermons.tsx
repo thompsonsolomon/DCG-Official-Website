@@ -9,13 +9,16 @@ export const AdminSermons = () => {
   const { sermons, addSermon, updateSermon, deleteSermon } = useSermons()
 
   const [isFormOpen, setIsFormOpen] = useState(false)
-const [editingId, setEditingId] = useState<string | null>(null)
-const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<SermonForm>({
     SermonTitle: '',
     preacher: '',
     topic: '',
+    description: '',
+    videoUrl: '',
+    image: '',
     date: '',
     Imgurl: '',
   })
@@ -37,91 +40,94 @@ const [imagePreview, setImagePreview] = useState<string | null>(null)
   // -----------------------------
   // IMAGE UPLOAD (FIXED)
   // -----------------------------
-const handleImageUpload = async (file: File) => {
-  try {
-    const res = await uploadToBackend(file)
+  const handleImageUpload = async (file: File) => {
+    try {
+      const res = await uploadToBackend(file)
 
-    const fileUrl =   res
+      const fileUrl = res
 
-    if (!fileUrl) {
-      console.log('Invalid upload response:', res)
-      throw new Error('No image URL returned')
-    }
-
-    setImagePreview(fileUrl)
-
-    setFormData((prev) => {
-      const updated = { ...prev, Imgurl: fileUrl }
-      console.log('UPDATED FORM:', updated) // 🔥 debug
-      return updated
-    })
-
-    toast.success('Image uploaded successfully')
-  } catch (err) {
-    console.log('UPLOAD ERROR:', err)
-    toast.error('Image upload failed')
-  }
-}
-
-  
-
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-
-  try {
-    if (editingId) {
-      // ✅ ONLY send safe update fields
-      const { SermonTitle, preacher, topic, date, Imgurl } = formData
-
-      const payload = {
-        SermonTitle,
-        preacher,
-        topic,
-        date,
-        Imgurl,
-        updatedAt: new Date(),
+      if (!fileUrl) {
+        console.log('Invalid upload response:', res)
+        throw new Error('No image URL returned')
       }
 
-      console.log('Updating sermon with ID:', editingId)
+      setImagePreview(fileUrl)
 
-      await updateSermon(editingId, payload)
+      setFormData((prev) => {
+        const updated = { ...prev, Imgurl: fileUrl }
+        console.log('UPDATED FORM:', updated) // 🔥 debug
+        return updated
+      })
 
-      toast.success('Sermon updated successfully')
-    } else {
-     
-
-      const payload = {
-  ...formData,
-  image: formData.image || '',
-  Imgurl: formData.Imgurl || '',
-  description: formData.description || '',
-  videoUrl: formData.videoUrl || '',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}
-
-      await addSermon(payload)
-
-      toast.success('Sermon created successfully')
+      toast.success('Image uploaded successfully')
+    } catch (err) {
+      console.log('UPLOAD ERROR:', err)
+      toast.error('Image upload failed')
     }
-
-    // reset
-    setFormData({
-      SermonTitle: '',
-      preacher: '',
-      topic: '',
-      date: '',
-      Imgurl: '',
-    })
-
-    setEditingId(null)
-    setIsFormOpen(false)
-    setImagePreview(null)
-  } catch (error) {
-    console.log(error)
-    toast.error('Failed to save sermon')
   }
-}
+
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      if (editingId) {
+        // ✅ ONLY send safe update fields
+        const { SermonTitle, preacher, topic, date, Imgurl, description } = formData
+
+        const payload = {
+          SermonTitle,
+          preacher,
+          topic,
+          date,
+          Imgurl,
+          description,
+          updatedAt: new Date(),
+        }
+
+        console.log('Updating sermon with ID:', editingId)
+
+        await updateSermon(editingId, payload)
+
+        toast.success('Sermon updated successfully')
+      } else {
+
+
+        const payload = {
+          ...formData,
+          image: formData.image || '',
+          Imgurl: formData.Imgurl || '',
+          description: formData.description || '',
+          videoUrl: formData.videoUrl || '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+
+        await addSermon(payload)
+
+        toast.success('Sermon created successfully')
+      }
+
+      setFormData({
+        SermonTitle: '',
+        preacher: '',
+        topic: '',
+        description: '',
+        videoUrl: '',
+        image: '',
+        date: '',
+        Imgurl: '',
+      })
+
+      setEditingId(null)
+      setIsFormOpen(false)
+      setImagePreview(null)
+    } catch (error) {
+      console.log(error)
+      toast.error('Failed to save sermon')
+    }
+  }
 
 
   // -----------------------------
@@ -134,6 +140,9 @@ const handleImageUpload = async (file: File) => {
       SermonTitle: sermon.SermonTitle || '',
       preacher: sermon.preacher || '',
       topic: sermon.topic || '',
+      description: sermon.description || '',
+      videoUrl: sermon.videoUrl || '',
+      image: sermon.image || '',
       date: sermon.date || '',
       Imgurl: sermon.Imgurl || '',
     })
@@ -198,8 +207,7 @@ const handleImageUpload = async (file: File) => {
               placeholder="Sermon Title"
               value={formData.SermonTitle}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-xl"
-              required
+className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"              required
             />
 
             <input
@@ -208,7 +216,7 @@ const handleImageUpload = async (file: File) => {
               placeholder="Preacher"
               value={formData.preacher}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-xl"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
               required
             />
 
@@ -218,16 +226,24 @@ const handleImageUpload = async (file: File) => {
               placeholder="Topic"
               value={formData.topic}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-xl"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
               required
             />
-
+            <textarea
+              name="description"
+              placeholder="Sermon Description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={5}
+              className="w-full px-4 py-3 border rounded-xl resize-none"
+              required
+            />
             <input
               type="date"
               name="date"
               value={formData.date}
               onChange={handleChange}
-              className="w-full px-4 py-3 border rounded-xl"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
               required
             />
 
@@ -240,6 +256,14 @@ const handleImageUpload = async (file: File) => {
                   const file = e.target.files?.[0]
                   if (file) handleImageUpload(file)
                 }}
+              />
+              <input
+                type="text"
+                name="videoUrl"
+                placeholder="Video URL"
+                value={formData.videoUrl}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
               />
 
               {imagePreview && (
@@ -268,6 +292,7 @@ const handleImageUpload = async (file: File) => {
               <th className="px-6 py-3">Image</th>
               <th className="px-6 py-3">Title</th>
               <th className="px-6 py-3">Preacher</th>
+              <th className="px-6 py-3">Description</th>
               <th className="px-6 py-3">Date</th>
               <th className="px-6 py-3">Topic</th>
               <th className="px-6 py-3">Actions</th>
@@ -288,6 +313,9 @@ const handleImageUpload = async (file: File) => {
 
                 <td className="px-6 py-4">{sermon.SermonTitle}</td>
                 <td className="px-6 py-4">{sermon.preacher}</td>
+                <td className="px-6 py-4 max-w-xs truncate">
+                  {sermon.description}
+                </td>
                 <td className="px-6 py-4">
                   {new Date(sermon.date).toLocaleDateString()}
                 </td>

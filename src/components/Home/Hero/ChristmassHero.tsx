@@ -3,8 +3,13 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 const images = [
+  "/asset/bg/25.jpg",
+  "/asset/bg/5.jpg",
+  "/asset/bg/21.jpg",
+    "/asset/bg/7.jpg",
    "/asset/bg/crs1.jpg",
   "/asset/bg/crs2.jpg",
+
 ]
 
 export default function ChristmasHero() {

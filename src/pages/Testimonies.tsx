@@ -13,8 +13,9 @@ type TestimonyForm = {
 }
 
 export const Testimonies = () => {
-  const { testimonies, addTestimony } = useTestimonies(true)
-
+  const { testimonies, addTestimony } = useTestimonies(false)
+  const [selectedTestimony, setSelectedTestimony] =
+    useState<any | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
@@ -290,7 +291,8 @@ export const Testimonies = () => {
             {testimonies.map((testimony) => (
               <div
                 key={testimony.id}
-                className="bg-white rounded-3xl shadow-md hover:shadow-2xl transition duration-300 p-8 border border-gray-100"
+                onClick={() => setSelectedTestimony(testimony)}
+                className="bg-white cursor-pointer rounded-3xl shadow-md hover:shadow-2xl transition duration-300 p-8 border border-gray-100"
               >
                 <div className="flex items-start gap-4 mb-6">
                   {testimony.imageUrl && (
@@ -324,7 +326,7 @@ export const Testimonies = () => {
                   </svg>
                 </div>
 
-                <p className="text-gray-700 leading-relaxed mb-6 line-clamp-4">
+                <p className="text-gray-700 leading-relaxed mb-6 line-clamp-3">
                   {testimony.story}
                 </p>
 
@@ -342,7 +344,100 @@ export const Testimonies = () => {
               </div>
             ))}
           </div>
+          {/* ========================================= */}
+          {/* TESTIMONY MODAL */}
+          {/* ========================================= */}
 
+          {selectedTestimony && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+
+              <div className="relative bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+
+                {/* CLOSE BUTTON */}
+                <button
+                  onClick={() => setSelectedTestimony(null)}
+                  className="absolute top-4 right-4 z-10 bg-black/60 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition"
+                >
+                  ✕
+                </button>
+
+                {/* IMAGE */}
+                {selectedTestimony.imageUrl && (
+                  <div className="h-72 md:h-96 overflow-hidden">
+                    <img
+                      src={selectedTestimony.imageUrl}
+                      alt={selectedTestimony.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* CONTENT */}
+                <div className="p-6 md:p-10">
+
+                  {/* HEADER */}
+                  <div className="flex items-center gap-4 mb-8">
+
+                    {selectedTestimony.imageUrl && (
+                      <img
+                        src={selectedTestimony.imageUrl}
+                        alt={selectedTestimony.name}
+                        className="w-20 h-20 rounded-full object-cover border-4 border-[#008080]/10 shadow"
+                      />
+                    )}
+
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-900">
+                        {selectedTestimony.name}
+                      </h2>
+
+                      <p className="text-[#008080] font-semibold">
+                        {selectedTestimony.title}
+                      </p>
+
+                      <p className="text-sm text-gray-500 mt-1">
+                        {new Date(
+                          selectedTestimony.date
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* QUOTE */}
+                  <div className="text-[#008080]/20 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-14 h-14"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M7.17 6A5.001 5.001 0 002 11v7h7v-7H5.1A3.001 3.001 0 017.17 8H9V6H7.17zm10 0A5.001 5.001 0 0012 11v7h7v-7h-3.9A3.001 3.001 0 0117.17 8H19V6h-1.83z" />
+                    </svg>
+                  </div>
+
+                  {/* STORY */}
+                  <p className="text-gray-700 leading-8 text-lg whitespace-pre-line">
+                    {selectedTestimony.story}
+                  </p>
+
+                  {/* FOOTER */}
+                  <div className="mt-10 flex flex-wrap gap-3 items-center justify-between border-t pt-6">
+
+                    <span className="bg-[#008080]/10 text-[#008080] px-4 py-2 rounded-full text-sm font-semibold">
+                      Shared Testimony
+                    </span>
+
+                    <button
+                      onClick={() => setSelectedTestimony(null)}
+                      className="bg-[#008080] hover:bg-[#006666] text-white px-6 py-3 rounded-xl font-semibold transition"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {/* EMPTY STATE */}
           {testimonies.length === 0 && (
             <div className="text-center py-20">

@@ -151,28 +151,30 @@ export const Home = () => {
             {loadingEvents
               ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
               : upcomingEvents.map((event, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
-                  className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
-                >
-                  <img
-                    src={event.Imgurl || "/asset/bg/1.jpg"}
-                    alt={event.EventTitle}
-                    className="w-full h-48 object-cover"
-                  />
+                <Link to={`/events/${event.id}`} key={event.id}>
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: i * 0.15 }}
+                    className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <img
+                      src={event.Imgurl || "/asset/bg/1.jpg"}
+                      alt={event.EventTitle}
+                      className="w-full h-48 object-cover"
+                    />
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{event.EventTitle}</h3>
-                    <p className="text-gray-600 mb-4">{event.disc}</p>
-                    <p className="text-sm text-accent font-semibold">
-                      {new Date(event.date).toLocaleDateString()} at {event.time}
-                    </p>
-                  </div>
-                </motion.div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2">{event.EventTitle}</h3>
+                      <p className="text-gray-600 mb-4 max-w-xs truncate">{event.disc}</p>
+                      <p className="text-sm text-accent font-semibold">
+                        {new Date(event.date).toLocaleDateString()} at {event.time}
+                      </p>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
           </div>
         </div>
@@ -189,28 +191,31 @@ export const Home = () => {
             {loadingSermons
               ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
               : recentSermons.map((sermon, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
-                  className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
-                >
-                  <img
-                    src={sermon.Imgurl || "/asset/bg/1.jpg"}
-                    alt={sermon.SermonTitle}
-                    className="w-full h-48 object-cover"
-                  />
+                <Link to={`/sermons/${sermon.id}`} key={sermon.id}>
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: i * 0.15 }}
+                    className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <img
+                      src={sermon.Imgurl || "/asset/bg/1.jpg"}
+                      alt={sermon.SermonTitle}
+                      className="w-full h-48 object-cover"
+                    />
 
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{sermon.SermonTitle}</h3>
-                    <p className="text-gray-600 mb-2">{sermon.preacher}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(sermon.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </motion.div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2">{sermon.SermonTitle}</h3>
+                      <p className="text-[#008080] mb-2">{sermon.preacher}</p>
+                      <p className="text-gray-600 mb-2 max-w-xs truncate">{sermon.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(sermon.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
           </div>
         </div>
