@@ -1,0 +1,23 @@
+{
+  "name": "Disciples Church of God",
+  "short_name": "DCGFAN",
+  "description": "Official church platform for Disciples Church of God",
+  "theme_color": "#008080",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/assets/church-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/church-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
