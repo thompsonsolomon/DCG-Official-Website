@@ -30,12 +30,13 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
             <ul className="space-y-2 text-gray-300">
-              <li><a href="tel:+1234567890" className="hover:text-accent transition">(123) 456-7890</a></li>
-              <li><a href="mailto:info@discipleschurch.com" className="hover:text-accent transition">info@discipleschurch.com</a></li>
+              <li><a href="tel:+1234567890" className="hover:text-accent transition">(123) 8036550941</a></li>
+              <li><a href="mailto:info@dcg.org" className="hover:text-accent transition">info@dcgfan.org</a></li>
               <li>
                 <address className="not-italic">
-                  123 Main Street<br />
-                  City, State 12345
+                  @km 11, Akure/Owo Road,<br />
+                  Ajegunle ilu Abo Via Akure, <br />
+                  Akure North LG Ondo State
                 </address>
               </li>
             </ul>
@@ -45,9 +46,9 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
             <div className="flex space-x-4">
-              <a href="#" className="hover:text-accent transition">Facebook</a>
-              <a href="#" className="hover:text-accent transition">Instagram</a>
-              <a href="#" className="hover:text-accent transition">YouTube</a>
+              <a href="https://www.facebook.com/DCGFAN/?checkpoint_src=any" className="hover:text-accent transition">Facebook</a>
+              <a href="https://www.facebook.com/DCGFAN/?checkpoint_src=any" className="hover:text-accent transition">Instagram</a>
+              <a href="https://www.youtube.com/@discipleschurchofgod" className="hover:text-accent transition">YouTube</a>
             </div>
           </div>
         </div>
@@ -59,6 +60,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-    
+
   )
 }

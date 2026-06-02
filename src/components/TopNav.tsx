@@ -36,7 +36,7 @@ export default function TopHeader() {
 
             {/* Replace Google with Mail or Globe */}
             <a
-              href="#"
+              href="mailto:info@dcg.org"
               className="hover:text-accent transition"
             >
               <Mail size={16} />
@@ -58,11 +58,11 @@ export default function TopHeader() {
 
           {/* Phone */}
           <a
-            href="tel:+08035374830"
+            href="tel:08036550941"
             className="flex items-center gap-2 hover:text-accent transition"
           >
             <Phone size={16} />
-            <span>08035374830</span>
+            <span>08036550941</span>
           </a>
 
         </div>

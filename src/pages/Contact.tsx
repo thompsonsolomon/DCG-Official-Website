@@ -56,15 +56,23 @@ export const Contact = () => {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Address</h3>
-            <p className="text-gray-700">123 Church Street<br />City, State 12345</p>
+            <p className="text-gray-700">
+
+   <address className="not-italic">
+                  @km 11, Akure/Owo Road,<br />
+                  Ajegunle ilu Abo Via Akure, <br />
+                  Akure North LG Ondo State
+                </address>
+
+            </p>
           </div>
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Phone</h3>
-            <p className="text-gray-700">(555) 123-4567</p>
+            <p className="text-gray-700">(123) 8036550941</p>
           </div>
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2">Email</h3>
-            <p className="text-gray-700">info@discipleschurchgod.org</p>
+            <p className="text-gray-700">info@dcgfan.org</p>
           </div>
         </div>
 
