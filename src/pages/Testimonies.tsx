@@ -1,8 +1,10 @@
 import Breadcrumb from '@/UI/Breadcrum'
 import { useTestimonies } from '../hooks/useTestimonies'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { uploadToBackend } from '@/UI/UploadBackend'
 import toast from 'react-hot-toast'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '@/config/firebase'
 
 type TestimonyForm = {
   name: string
@@ -14,6 +16,9 @@ type TestimonyForm = {
 
 export const Testimonies = () => {
   const { testimonies, addTestimony } = useTestimonies(false)
+  const [settings, setSettings] = useState({
+    allowTestimonies: false
+  })
   const [selectedTestimony, setSelectedTestimony] =
     useState<any | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -98,6 +103,21 @@ export const Testimonies = () => {
     }
   }
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      doc(db, 'settings', 'main'),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setSettings(snapshot.data() as any)
+          console.log('Live settings updated:', snapshot.data())
+        }
+      }
+    )
+
+    console.log(settings)
+    return () => unsubscribe()
+  }, [])
+
   return (
     <div className="w-full bg-gray-50 min-h-screen">
       <Breadcrumb
@@ -132,26 +152,30 @@ export const Testimonies = () => {
             </p>
 
             {/* SHARE BUTTON */}
-            <button
-              onClick={() => {
-                setIsFormOpen(!isFormOpen)
+            {
+              settings.allowTestimonies &&
+              <button
+                onClick={() => {
+                  setIsFormOpen(!isFormOpen)
 
-                setFormData({
-                  name: '',
-                  title: '',
-                  story: '',
-                  date: '',
-                  imageUrl: '',
-                })
+                  setFormData({
+                    name: '',
+                    title: '',
+                    story: '',
+                    date: '',
+                    imageUrl: '',
+                  })
 
-                setImagePreview(null)
-              }}
-              className="mt-8 bg-[#008080] hover:bg-[#006666] text-white px-8 py-3 rounded-xl font-semibold transition shadow-lg"
-            >
-              {isFormOpen
-                ? 'Close Form'
-                : 'Share Your Testimony'}
-            </button>
+                  setImagePreview(null)
+                }}
+                className="mt-8 bg-[#008080] hover:bg-[#006666] text-white px-8 py-3 rounded-xl font-semibold transition shadow-lg"
+              >
+                {isFormOpen
+                  ? 'Close Form'
+                  : 'Share Your Testimony'}
+              </button>
+            }
+
           </div>
 
           {/* FORM */}

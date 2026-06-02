@@ -10,6 +10,7 @@ import {
   MessageSquareHeart,
   Mail,
 } from 'lucide-react'
+import path from 'path'
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -61,6 +62,12 @@ const menuItems = [
     path: '/admin/messages',
     icon: <Mail size={20} />,
   },
+
+  {
+    label: 'Assets',
+    path: '/admin/assets',
+    icon: <Images size={20} />,
+  }
 ]
 
   return (

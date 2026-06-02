@@ -43,11 +43,36 @@ export const Live = () => {
       <section className="py-14 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
 
+       {/* LIVE BADGE */}
+{settings.isLiveStreaming && (
+  <div className="flex items-center justify-center mb-10">
+    <div className="relative flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-6 py-3 rounded-full shadow-md overflow-hidden">
+
+      {/* animated glow background */}
+      <span className="absolute inset-0 bg-red-200 opacity-20 animate-pulse" />
+
+      {/* live dot */}
+      <span className="relative flex items-center gap-2 font-bold tracking-wider">
+
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+        </span>
+
+        WE ARE LIVE NOW
+      </span>
+
+    </div>
+  </div>
+)}
+
           {/* HEADER */}
           <div className="text-center mb-12">
             <span className="inline-block bg-[#008080]/10 text-[#008080] px-4 py-2 rounded-full text-sm font-semibold mb-4">
               Worship With Us Online
             </span>
+
+
 
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               {settings.liveTitle || 'Live Worship Experience'}
@@ -60,18 +85,16 @@ export const Live = () => {
           </div>
 
           {/* LIVE BADGE */}
-          {settings.isLive && (
-            <div className="flex items-center justify-center mb-8">
-              <div className="bg-red-100 border border-red-300 text-red-700 px-5 py-3 rounded-full flex items-center gap-3 shadow-sm">
-                <div className="w-3 h-3 bg-red-600 rounded-full animate-pulse"></div>
-
-                <span className="font-bold tracking-wide">
-                  WE ARE LIVE NOW
-                </span>
-              </div>
-            </div>
-          )}
-
+          <div className="flex justify-center mb-4">
+  <div className={`px-4 py-1 rounded-full text-xs font-bold ${
+    settings.isLiveStreaming
+      ? 'bg-red-100 text-red-700 animate-pulse'
+      : 'bg-gray-100 text-gray-500'
+  }`}>
+    {settings.isLiveStreaming ? 'LIVE BROADCAST ACTIVE' : 'OFFLINE'}
+  </div>
+</div>
+ 
           {/* VIDEO PLAYER */}
           <div className="bg-black rounded-3xl overflow-hidden shadow-2xl mb-14 aspect-video border border-gray-200">
             {settings.liveStreamUrl ? (

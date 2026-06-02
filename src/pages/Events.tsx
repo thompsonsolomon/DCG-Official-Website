@@ -3,9 +3,10 @@ import { useEvents } from '../hooks/useEvents'
 import Breadcrumb from '@/UI/Breadcrum'
 import { motion } from "framer-motion";
 import { Link } from 'react-router-dom';
+import { CardSkeleton } from '@/UI/FlipCard';
 
 export const Events = () => {
-  const { events } = useEvents()
+  const { events, loading } = useEvents()
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   const categories = ['all', 'worship', 'fellowship', 'outreach', 'youth']
@@ -14,6 +15,7 @@ export const Events = () => {
     : events.filter(e => e.category === selectedCategory)
 
 
+    console.log('Loading event:', loading) // Debug log
 
 
   return (
@@ -45,8 +47,13 @@ export const Events = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filteredEvents.map((event, i) => (
-              <Link to={`/events/${event.id}`}>
+            {
+            
+            loading
+                          ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                          : 
+            filteredEvents.map((event, i) => (
+              <Link to={`/events/${event.id}`} key={event.id}>
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 40 }}
@@ -70,7 +77,9 @@ export const Events = () => {
                   </div>
                 </motion.div>
               </Link>
-            ))}
+            ))
+            
+            }
           </div>
 
           {filteredEvents.length === 0 && (

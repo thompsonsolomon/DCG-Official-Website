@@ -251,6 +251,12 @@ export const AdminAction = () => {
                 <option value="convention">
                   Convention Hero
                 </option>
+
+                <option value="mountain">
+                   21 mountain prayer
+                </option>
+
+
               </select>
             </div>
 

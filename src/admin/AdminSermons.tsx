@@ -7,7 +7,7 @@ import { Sermon, SermonForm } from '@/types'
 
 export const AdminSermons = () => {
   const { sermons, addSermon, updateSermon, deleteSermon } = useSermons()
-
+const [loadingImageUpload, setLoadingImageUpload] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -40,31 +40,33 @@ export const AdminSermons = () => {
   // -----------------------------
   // IMAGE UPLOAD (FIXED)
   // -----------------------------
-  const handleImageUpload = async (file: File) => {
-    try {
-      const res = await uploadToBackend(file)
+ 
+const handleImageUpload = async (file: File) => {
+  setLoadingImageUpload(true)
 
-      const fileUrl = res
+  try {
+    const fileUrl = await uploadToBackend(file)
 
-      if (!fileUrl) {
-        console.log('Invalid upload response:', res)
-        throw new Error('No image URL returned')
-      }
-
-      setImagePreview(fileUrl)
-
-      setFormData((prev) => {
-        const updated = { ...prev, Imgurl: fileUrl }
-        console.log('UPDATED FORM:', updated) // 🔥 debug
-        return updated
-      })
-
-      toast.success('Image uploaded successfully')
-    } catch (err) {
-      console.log('UPLOAD ERROR:', err)
-      toast.error('Image upload failed')
+    if (!fileUrl) {
+      throw new Error('No image URL returned')
     }
+
+    setImagePreview(fileUrl)
+
+    setFormData((prev) => ({
+      ...prev,
+      Imgurl: fileUrl,
+    }))
+
+    toast.success('Image uploaded successfully')
+  } catch (err) {
+    console.log(err)
+    toast.error('Image upload failed')
+  } finally {
+    setLoadingImageUpload(false)
   }
+}
+
 
 
 
@@ -249,21 +251,34 @@ className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none
 
             {/* IMAGE UPLOAD */}
             <div className="border-2 border-dashed rounded-xl p-6 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleImageUpload(file)
-                }}
-              />
+         <input
+  type="file"
+  accept="image/*"
+  disabled={loadingImageUpload}
+  className="disabled:opacity-50 disabled:cursor-not-allowed"
+  onChange={(e) => {
+    const file = e.target.files?.[0]
+    if (file) handleImageUpload(file)
+  }}
+/>
+
+{loadingImageUpload && (
+  <div className="mt-4 flex flex-col items-center">
+    <div className="w-10 h-10 border-4 border-[#008080]/20 border-t-[#008080] rounded-full animate-spin"></div>
+
+    <p className="mt-3 text-sm text-gray-600">
+      Uploading image...
+    </p>
+  </div>
+)}
+
               <input
                 type="text"
                 name="videoUrl"
                 placeholder="Video URL"
                 value={formData.videoUrl}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
+                className="w-full px-4 mt-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#008080]"
               />
 
               {imagePreview && (
@@ -274,12 +289,32 @@ className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none
               )}
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold"
-            >
-              {editingId ? 'Update Sermon' : 'Create Sermon'}
-            </button>
+           <button
+  type="submit"
+  disabled={
+    loadingImageUpload ||
+    !formData.Imgurl
+  }
+  className="
+    w-full
+    bg-gradient-to-r
+    from-[#008080]
+    to-accent
+    text-white
+    py-3
+    rounded-xl
+    font-semibold
+    transition-all
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+  "
+>
+  {loadingImageUpload
+    ? 'Uploading Image...'
+    : editingId
+    ? 'Update Sermon'
+    : 'Create Sermon'}
+</button>
           </form>
         </div>
       )}

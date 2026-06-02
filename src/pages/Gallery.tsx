@@ -1,10 +1,11 @@
 import { useGallery } from '@/hooks'
 import Breadcrumb from '@/UI/Breadcrum'
+import { CardSkeleton } from '@/UI/FlipCard'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export const Gallery = () => {
-  const { images } = useGallery()
+  const { images, loading } = useGallery()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const navigate = useNavigate()
@@ -42,7 +43,11 @@ export const Gallery = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredItems?.map((item) => (
+            {
+                loading
+                                      ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                                      : 
+            filteredItems?.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer group"
@@ -69,7 +74,8 @@ export const Gallery = () => {
                   </button>
                 </div>
               </div>
-            ))}
+            ))
+            }
           </div>
 
           {filteredItems?.length === 0 && (

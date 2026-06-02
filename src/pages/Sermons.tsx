@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useSermons } from '../hooks/useSermons'
 import Breadcrumb from '@/UI/Breadcrum'
 import { Link } from 'react-router-dom'
+import { CardSkeleton } from '@/UI/FlipCard'
 
 export const Sermons = () => {
-  const { sermons } = useSermons()
+  const { sermons, loading } = useSermons()
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredSermons = sermons.filter(sermon =>
@@ -37,7 +38,13 @@ export const Sermons = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filteredSermons.map((sermon) => (
+            {
+            
+                loading
+                                      ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                                      : 
+
+            filteredSermons.map((sermon) => (
               <Link to={`/sermons/${sermon.id}`} key={sermon.id}>
               <div key={sermon.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                 {sermon.videoUrl ? (
@@ -68,7 +75,9 @@ export const Sermons = () => {
                 </div>
               </div>
               </Link>
-            ))}
+            ))
+            
+            }
           </div>
 
           {filteredSermons.length === 0 && (

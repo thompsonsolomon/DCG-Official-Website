@@ -5,11 +5,13 @@ import { db } from "@/config/firebase";
 import ChristmasHero from "./ChristmassHero";
 import DefaultHero from "./DefaultHero";
 import { ConventionHero } from "./ConventionHero";
+import MountainPrayer from "./MountainPrayer";
 
 const heroMap: Record<string, ReactNode> = {
   convention: <ConventionHero />,
   christmas: <ChristmasHero />,
   default: <DefaultHero />,
+  mountain: <MountainPrayer />
 };
 
 export default function HeroSwitcher() {
