@@ -41,7 +41,7 @@ export const AdminAction = () => {
           await setDoc(ref, settings)
         }
       } catch (error) {
-        console.log(error)
+        console.error(error)
         toast.error('Failed to load settings')
       } finally {
         setLoading(false)
@@ -86,7 +86,7 @@ export const AdminAction = () => {
 
       toast.success(successMessage)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to update setting')
     }
   }

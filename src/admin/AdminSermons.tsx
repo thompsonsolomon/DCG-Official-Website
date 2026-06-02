@@ -60,7 +60,7 @@ const handleImageUpload = async (file: File) => {
 
     toast.success('Image uploaded successfully')
   } catch (err) {
-    console.log(err)
+    console.error(err)
     toast.error('Image upload failed')
   } finally {
     setLoadingImageUpload(false)
@@ -76,7 +76,7 @@ const handleImageUpload = async (file: File) => {
     try {
       if (editingId) {
         // ✅ ONLY send safe update fields
-        const { SermonTitle, preacher, topic, date, Imgurl, description } = formData
+        const { SermonTitle, preacher, topic, date, Imgurl, description, videoUrl } = formData
 
         const payload = {
           SermonTitle,
@@ -85,10 +85,10 @@ const handleImageUpload = async (file: File) => {
           date,
           Imgurl,
           description,
+          videoUrl,
           updatedAt: new Date(),
         }
 
-        console.log('Updating sermon with ID:', editingId)
 
         await updateSermon(editingId, payload)
 
@@ -126,7 +126,7 @@ const handleImageUpload = async (file: File) => {
       setIsFormOpen(false)
       setImagePreview(null)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to save sermon')
     }
   }
@@ -137,7 +137,6 @@ const handleImageUpload = async (file: File) => {
   // -----------------------------
   const handleEdit = (sermon: Sermon) => {
     setEditingId(sermon.id || null)
-    // console.log('Editing sermon:', sermon.id) // Debug log
     setFormData({
       SermonTitle: sermon.SermonTitle || '',
       preacher: sermon.preacher || '',
@@ -164,7 +163,7 @@ const handleImageUpload = async (file: File) => {
       await deleteSermon(id)
       toast.success('Sermon deleted successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to delete sermon')
     }
   }

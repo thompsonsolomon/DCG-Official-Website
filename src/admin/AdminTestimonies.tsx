@@ -63,7 +63,7 @@ export const AdminTestimonies = () => {
 
       toast.success('Image uploaded successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Image upload failed')
     }
   }
@@ -111,7 +111,7 @@ export const AdminTestimonies = () => {
       setEditingId(null)
       setIsFormOpen(false)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to save testimony')
     }
   }
@@ -120,7 +120,6 @@ export const AdminTestimonies = () => {
   // EDIT FIXED
   // -----------------------------------
   const handleEdit = (testimony: Testimony) => {
-    console.log('Editing testimony:', testimony)
 
     setFormData({
       name: testimony.name || '',
@@ -149,7 +148,7 @@ export const AdminTestimonies = () => {
 
       toast.success('Testimony deleted successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to delete testimony')
     }
   }
@@ -163,7 +162,7 @@ export const AdminTestimonies = () => {
 
       toast.success('Testimony approved')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to approve testimony')
     }
   }

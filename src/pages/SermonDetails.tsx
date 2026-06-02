@@ -1,11 +1,12 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useSermons } from '../hooks/useSermons'
 import Breadcrumb from '@/UI/Breadcrum'
+import { Loader2 } from 'lucide-react'
 
 export const SermonDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { sermons } = useSermons()
+  const { sermons, loading } = useSermons()
 
   const sermon = sermons.find(item => item.id === id)
 
@@ -13,7 +14,7 @@ export const SermonDetails = () => {
     .filter(item => item.id !== id)
     .slice(0, 3)
 
-  if (!sermon) {
+  if (!sermon && !loading) {
     return (
       <div className="text-center py-20">
         <p className="text-xl">Sermon not found</p>
@@ -27,20 +28,32 @@ export const SermonDetails = () => {
     )
   }
 
+
   return (
     <div className="w-full">
       {/* Breadcrumb */}
       <Breadcrumb
-        title={sermon.SermonTitle}
-        backgroundImage={sermon.Imgurl || '/asset/bg/3.jpg'}
+        title={sermon?.SermonTitle ||"Title"}
+        backgroundImage={sermon?.Imgurl || '/asset/bg/3.jpg'}
         breadcrumbs={[
           { label: "Home", path: "/" },
           { label: "Sermons", path: "/sermons" },
-          { label: sermon.SermonTitle },
+          { label: sermon?.SermonTitle || "Label" },
         ]}
       />
 
-      <section className="py-12 px-4 md:px-8">
+      {
+        loading ?(
+    <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-800 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>        )
+        :
+
+        (
+           <section className="py-12 px-4 md:px-8">
         <div className="max-w-4xl mx-auto">
 
           {/* Back */}
@@ -55,52 +68,52 @@ export const SermonDetails = () => {
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
 
             {/* Video OR Image */}
-            {sermon.videoUrl ? (
+            {sermon?.videoUrl ? (
               <div className="w-full h-[300px]">
                 <iframe
-                  src={sermon.videoUrl}
-                  title={sermon.SermonTitle}
+                  src={sermon?.videoUrl}
+                  title={sermon?.SermonTitle}
                   className="w-full h-full"
                   allowFullScreen
                 />
               </div>
             ) : (
               <img
-                src={sermon.Imgurl || "/asset/bg/1.jpg"}
-                alt={sermon.SermonTitle}
+                src={sermon?.Imgurl || "/asset/bg/1.jpg"}
+                alt={sermon?.SermonTitle}
                 className="w-full h-[300px] object-cover"
               />
             )}
 
             {/* Content */}
             <div className="p-6 space-y-4">
-              <h1 className="text-3xl font-bold">{sermon.SermonTitle}</h1>
+              <h1 className="text-3xl font-bold">{sermon?.SermonTitle}</h1>
 
               <p className="text-gray-600">
-                <strong>Speaker:</strong> {sermon.preacher}
+                <strong>Speaker:</strong> {sermon?.preacher}
               </p>
 
               <p className="text-gray-600">
-                <strong>Topic:</strong> {sermon.topic}
+                <strong>Topic:</strong> {sermon?.topic}
               </p>
 
                <p className="text-gray-600 mb-2 leading-relaxed whitespace-pre-line">
                  <strong>Description: </strong> <br />
-                 {sermon.description}
+                 {sermon?.description}
                  </p>
 
 
               <p className="text-gray-500 text-sm">
-                {new Date(sermon.date || Date.now()).toLocaleDateString()}
+                {new Date(sermon?.date || Date.now()).toLocaleDateString()}
               </p>
 
               {/* ACTIONS */}
               <div className="flex flex-wrap gap-3 pt-4">
 
                 {/* Download */}
-                {sermon.videoUrl && (
+                {sermon?.videoUrl && (
                   <a
-                    href={sermon.videoUrl}
+                    href={sermon?.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-[#008080] text-white rounded-lg"
@@ -163,6 +176,10 @@ export const SermonDetails = () => {
 
         </div>
       </section>
+        )
+      }
+
+     
     </div>
   )
 }

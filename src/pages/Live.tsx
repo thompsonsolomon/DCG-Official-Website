@@ -28,12 +28,10 @@ export const Live = () => {
       (snapshot) => {
         if (snapshot.exists()) {
           setSettings(snapshot.data() as LiveSettings)
-          console.log('Live settings updated:', snapshot.data())
         }
       }
     )
 
-    console.log(settings)
     return () => unsubscribe()
   }, [])
 

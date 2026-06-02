@@ -10,6 +10,8 @@ export const AdminBlog = () => {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [loadingImageUpload, setLoadingImageUpload] = useState(false)
+
 
   const initialState: BlogPost = {
     id: '',
@@ -38,24 +40,34 @@ export const AdminBlog = () => {
   // -------------------------
   // IMAGE UPLOAD
   // -------------------------
+
+
+
   const handleImageUpload = async (file: File) => {
-    try {
-      const fileUrl = await uploadToBackend(file)
+  setLoadingImageUpload(true)
 
-      setFormData((prev) => ({
-        ...prev,
-        imageUrl: fileUrl,
-      }))
+  try {
+    const fileUrl = await uploadToBackend(file)
 
-      setImagePreview(fileUrl)
-
-      toast.success('Image uploaded successfully')
-    } catch (error) {
-      console.error(error)
-      toast.error('Image upload failed')
+    if (!fileUrl) {
+      throw new Error('No image URL returned')
     }
-  }
 
+    setImagePreview(fileUrl)
+
+    setFormData((prev) => ({
+      ...prev,
+      Imgurl: fileUrl,
+    }))
+
+    toast.success('Image uploaded successfully')
+  } catch (err) {
+    console.error(err)
+    toast.error('Image upload failed')
+  } finally {
+    setLoadingImageUpload(false)
+  }
+}
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,6 +216,18 @@ export const AdminBlog = () => {
                 }}
               />
 
+              {loadingImageUpload && (
+  <div className="mt-4 flex flex-col items-center">
+    <div className="w-10 h-10 border-4 border-[#008080]/20 border-t-[#008080] rounded-full animate-spin"></div>
+
+    <p className="mt-3 text-sm text-gray-600">
+      Uploading image...
+    </p>
+  </div>
+)}
+
+
+
               {imagePreview && (
                 <img
                   src={imagePreview}
@@ -212,12 +236,37 @@ export const AdminBlog = () => {
               )}
             </div>
 
-            <button
+            {/* <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700"
             >
               {editingId ? 'Update Article' : 'Create Article'}
-            </button>
+            </button> */}
+                    <button
+  type="submit"
+  disabled={
+    loadingImageUpload ||
+    !formData.imageUrl
+  }
+  className="
+    w-full
+    bg-gradient-to-r
+    from-[#008080]
+    to-accent
+    text-white
+    py-3
+    rounded-xl
+    font-semibold
+    transition-all
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+  "
+>
+  {loadingImageUpload
+    ? 'Uploading Image...'
+    : editingId
+    ?'Update Article' : 'Create Article'}
+</button>
           </form>
         </div>
       )}

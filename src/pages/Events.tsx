@@ -15,7 +15,6 @@ export const Events = () => {
     : events.filter(e => e.category === selectedCategory)
 
 
-    console.log('Loading event:', loading) // Debug log
 
 
   return (

@@ -20,7 +20,6 @@ export async function uploadToBackend(file: File): Promise<string> {
 
     const data = await response.json();
 
-    console.log("[UPLOAD RESPONSE]", data);
 
     return data.url; // 🔥 this is your downloadable link
   } catch (error:any) {

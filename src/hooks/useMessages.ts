@@ -10,17 +10,7 @@ export function useMessages() {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      // try {
-      //   const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'))
-      //   const snapshot = await getDocs(q)
-      //   const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message))
-      //   console.log(data)
-      //   setMessages(data)
-      // } catch (err) {
-      //   setError(err as Error)
-      // } finally {
-      //   setLoading(false)
-      // }
+      
 
 
         const q = query(collection(db, 'messages'), orderBy('date', 'desc'))
@@ -31,7 +21,6 @@ export function useMessages() {
                   ...doc.data(),
                   id: doc.id,
                 } as Message))
-                console.log('Fetched events:', data) // Debug log
       
       
                 setMessages(data)
@@ -67,7 +56,6 @@ export function useMessages() {
   }
 
   const markAsRead = async (id: string) => {
-    console.log(id)
     try {
       await updateDoc(doc(db, 'messages', id), { read: true })
     } catch (err) {

@@ -21,8 +21,7 @@ export default function PWAInstall() {
     const choice = await prompt.userChoice
 
     if (choice.outcome === 'accepted') {
-      console.log('App installed')
-    }
+      console.log('User accepted the A2HS prompt')}
   }
 
   if (!prompt) return null

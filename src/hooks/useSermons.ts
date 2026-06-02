@@ -18,7 +18,6 @@ export function useSermons() {
             ...doc.data(),
             id: doc.id,
           } as Sermon))
-          console.log('Fetched events:', data) // Debug log
 
 
           setSermons(data)
@@ -52,18 +51,7 @@ export function useSermons() {
     }
   }
 
-  // const updateSermon = async (id: string, updates: Partial<Sermon>) => {
-  //   console.log('Updating sermon with ID:', id) // Debug log
-  //   try {
-  //     await updateDoc(doc(db, 'Sermons', id), {
-  //       ...updates,
-  //       updatedAt: new Date(),
-  //     })
-  //   } catch (err) {
-  //     setError(err as Error)
-  //     throw err
-  //   }
-  // }
+
 
 
   const updateSermon = async (id: string, updates: Partial<Sermon>) => {
@@ -81,7 +69,6 @@ export function useSermons() {
   
 
   const deleteSermon = async (id: string) => {
-    console.log(id)
     try {
       await deleteDoc(doc(db, 'Sermons', id))
     } catch (err) {

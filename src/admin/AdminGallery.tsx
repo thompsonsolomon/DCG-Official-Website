@@ -57,7 +57,7 @@ export const AdminGallery = () => {
 
       toast.success('Image uploaded successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to upload image')
     } finally {
       setUploading(false)
@@ -97,7 +97,7 @@ export const AdminGallery = () => {
       setEditingId(null)
       setIsFormOpen(false)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to save image')
     }
   }
@@ -132,7 +132,7 @@ export const AdminGallery = () => {
       await deleteImage(id)
       toast.success('Image deleted successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to delete image')
     }
   }

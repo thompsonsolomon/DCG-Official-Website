@@ -28,7 +28,6 @@ export function useEvents() {
           ...doc.data(),
           id: doc.id,
         } as Event))
-console.log('Fetched events:', data) // Debug log
 
 
         setEvents(data)
@@ -76,7 +75,6 @@ console.log('Fetched events:', data) // Debug log
 
   // ✅ DELETE EVENT
   const deleteEvent = async (id: string) => {
-    console.log('Deleting event with ID:', id) // Debug log
     try {
       await deleteDoc(doc(db, 'Events', id))
     } catch (err) {

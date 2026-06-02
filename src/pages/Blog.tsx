@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useBlogs } from '../hooks/useBlogs'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '@/UI/Breadcrum'
+import { Loader2 } from 'lucide-react'
 
 export const Blog = () => {
-  const { blogs } = useBlogs()
+  const { blogs, loading } = useBlogs()
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredBlogs = blogs.filter(blog =>
@@ -12,7 +13,6 @@ export const Blog = () => {
     blog.content.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  console.log('Blogs:', blogs) // Debug log
 
   return (
     <div className="w-full">
@@ -37,7 +37,19 @@ export const Blog = () => {
             />
           </div>
 
-          <div className="space-y-8">
+
+       {
+        loading ?(
+    <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-800 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>        )
+        :
+
+        (
+        <div className="space-y-8">
             {filteredBlogs.map((blog) => (
               <article key={blog.id} className="bg-white rounded-lg shadow-md p-8 hover:shadow-lg transition">
                 <div className="flex justify-between items-start mb-4">
@@ -63,7 +75,10 @@ export const Blog = () => {
             ))}
           </div>
 
-          {filteredBlogs.length === 0 && (
+        )}
+  
+
+          {filteredBlogs.length === 0 ? !loading : (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg">No articles found</p>
             </div>

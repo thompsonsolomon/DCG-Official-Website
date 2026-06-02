@@ -15,7 +15,7 @@ export default function AssetManager() {
       const data = await res.json();
       setFiles(data.files || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
     setLoading(false);
   };

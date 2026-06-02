@@ -47,7 +47,7 @@ export default function AdminLogin() {
 
       navigate('/admin')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Invalid admin credentials')
     } finally {
       setLoading(false)

@@ -10,17 +10,7 @@ export function useGallery() {
 
   useEffect(() => {
     const fetchImages = async () => {
-      // try {
-      //   const q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'))
-      //   const snapshot = await getDocs(q)
-      //   const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GalleryImage))
-      //   console.log(data)
-      //   setImages(data)
-      // } catch (err) {
-      //   setError(err as Error)
-      // } finally {
-      //   setLoading(false)
-      // }
+     
 
 
 
@@ -33,7 +23,6 @@ export function useGallery() {
                         ...doc.data(),
                         id: doc.id,
                       } as GalleryImage))
-                      console.log('Fetched events:', data) // Debug log
             
             
                       setImages(data)

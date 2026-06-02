@@ -37,7 +37,6 @@ export default function HeroSwitcher() {
             data.heroType || "default";
 
           setHero(fetchedHero);
-        console.log("Fetched hero type:", data);
 
           localStorage.setItem(
             "hero",
@@ -45,7 +44,7 @@ export default function HeroSwitcher() {
           );
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 

@@ -1,11 +1,12 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useBlogs } from '../hooks/useBlogs'
 import Breadcrumb from '@/UI/Breadcrum'
+import { Loader2 } from 'lucide-react'
 
 export const BlogDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { blogs } = useBlogs()
+  const { blogs, loading } = useBlogs()
 
   const blog = blogs.find(item => item.id === id)
 
@@ -14,7 +15,7 @@ export const BlogDetails = () => {
     .filter(item => item.id !== id)
     .slice(0, 3)
 
-  if (!blog) {
+  if (!blog && !loading) {
     return (
       <div className="text-center py-20">
         <p className="text-xl">Blog not found</p>
@@ -30,7 +31,19 @@ export const BlogDetails = () => {
 
   return (
     <div className="w-full">
-      <section className="py-12 px-4 md:px-8">
+
+       {
+        loading ?(
+    <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-800 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>        )
+        :
+
+        (
+     <section className="py-12 px-4 md:px-8">
         <div className="max-w-4xl mx-auto">
 
           {/* Back */}
@@ -45,20 +58,20 @@ export const BlogDetails = () => {
           <article className="bg-white rounded-xl shadow-lg overflow-hidden">
 
             {/* Image */}
-            {blog.imageUrl && (
+            {blog?.imageUrl && (
               <img
-                src={blog.imageUrl}
-                alt={blog.title}
+                src={blog?.imageUrl}
+                alt={blog?.title}
                 className="w-full h-[300px] object-cover"
               />
             )}
 
             {/* Content */}
             <div className="p-6 space-y-4">
-              <h1 className="text-3xl font-bold">{blog.title}</h1>
+              <h1 className="text-3xl font-bold">{blog?.title}</h1>
 
               <p className="text-gray-500 text-sm">
-                {new Date(blog.date).toLocaleDateString('en-US', {
+                {new Date(blog?.date || "").toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
@@ -66,7 +79,7 @@ export const BlogDetails = () => {
               </p>
 
               <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {blog.content}
+                {blog?.content}
               </div>
 
               {/* Share */}
@@ -121,6 +134,9 @@ export const BlogDetails = () => {
 
         </div>
       </section>
+
+        )}
+ 
     </div>
   )
 }

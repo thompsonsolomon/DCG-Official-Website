@@ -30,7 +30,6 @@ export function useBlogs() {
             ...doc.data(),
             id: doc.id,
           } as BlogPost))
-          console.log('Fetched events:', data) // Debug log
 
 
           setBlogs(data)

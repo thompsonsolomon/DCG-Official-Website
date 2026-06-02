@@ -5,6 +5,7 @@ import { uploadToBackend } from '@/UI/UploadBackend'
 import toast from 'react-hot-toast'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/config/firebase'
+import { Loader2 } from 'lucide-react'
 
 type TestimonyForm = {
   name: string
@@ -15,7 +16,7 @@ type TestimonyForm = {
 }
 
 export const Testimonies = () => {
-  const { testimonies, addTestimony } = useTestimonies(false)
+  const { testimonies, addTestimony, loading } = useTestimonies(false)
   const [settings, setSettings] = useState({
     allowTestimonies: false
   })
@@ -62,7 +63,7 @@ export const Testimonies = () => {
 
       toast.success('Image uploaded successfully')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Image upload failed')
     }
   }
@@ -98,7 +99,7 @@ export const Testimonies = () => {
       setImagePreview(null)
       setIsFormOpen(false)
     } catch (error) {
-      console.log(error)
+      console.error(error)
       toast.error('Failed to submit testimony')
     }
   }
@@ -109,12 +110,10 @@ export const Testimonies = () => {
       (snapshot) => {
         if (snapshot.exists()) {
           setSettings(snapshot.data() as any)
-          console.log('Live settings updated:', snapshot.data())
         }
       }
     )
 
-    console.log(settings)
     return () => unsubscribe()
   }, [])
 
@@ -311,63 +310,82 @@ export const Testimonies = () => {
           )}
 
           {/* TESTIMONIES */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {testimonies.map((testimony) => (
-              <div
-                key={testimony.id}
-                onClick={() => setSelectedTestimony(testimony)}
-                className="bg-white cursor-pointer rounded-3xl shadow-md hover:shadow-2xl transition duration-300 p-8 border border-gray-100"
-              >
-                <div className="flex items-start gap-4 mb-6">
-                  {testimony.imageUrl && (
-                    <img
-                      src={testimony.imageUrl}
-                      alt={testimony.name}
-                      className="w-16 h-16 rounded-full object-cover border-4 border-[#008080]/10"
-                    />
-                  )}
 
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {testimony.name}
-                    </h3>
 
-                    <p className="text-[#008080] text-sm font-semibold">
-                      {testimony.title}
-                    </p>
-                  </div>
+          {
+            loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-emerald-800 mx-auto mb-4" />
+                  <p className="text-gray-600">Loading...</p>
+                </div>
+              </div>)
+              :
+
+              (
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {testimonies.map((testimony) => (
+                    <div
+                      key={testimony.id}
+                      onClick={() => setSelectedTestimony(testimony)}
+                      className="bg-white cursor-pointer rounded-3xl shadow-md hover:shadow-2xl transition duration-300 p-8 border border-gray-100"
+                    >
+                      <div className="flex items-start gap-4 mb-6">
+                        {testimony.imageUrl && (
+                          <img
+                            src={testimony.imageUrl}
+                            alt={testimony.name}
+                            className="w-16 h-16 rounded-full object-cover border-4 border-[#008080]/10"
+                          />
+                        )}
+
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">
+                            {testimony.name}
+                          </h3>
+
+                          <p className="text-[#008080] text-sm font-semibold">
+                            {testimony.title}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* QUOTE ICON */}
+                      <div className="mb-4 text-[#008080]/20">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-10 h-10"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M7.17 6A5.001 5.001 0 002 11v7h7v-7H5.1A3.001 3.001 0 017.17 8H9V6H7.17zm10 0A5.001 5.001 0 0012 11v7h7v-7h-3.9A3.001 3.001 0 0117.17 8H19V6h-1.83z" />
+                        </svg>
+                      </div>
+
+                      <p className="text-gray-700 leading-relaxed mb-6 line-clamp-3">
+                        {testimony.story}
+                      </p>
+
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-gray-500">
+                          {new Date(
+                            testimony.date
+                          ).toLocaleDateString()}
+                        </p>
+
+                        <span className="bg-[#008080]/10 text-[#008080] text-xs px-3 py-1 rounded-full font-semibold">
+                          Shared Testimony
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                {/* QUOTE ICON */}
-                <div className="mb-4 text-[#008080]/20">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-10 h-10"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M7.17 6A5.001 5.001 0 002 11v7h7v-7H5.1A3.001 3.001 0 017.17 8H9V6H7.17zm10 0A5.001 5.001 0 0012 11v7h7v-7h-3.9A3.001 3.001 0 0117.17 8H19V6h-1.83z" />
-                  </svg>
-                </div>
+              )
+          }
 
-                <p className="text-gray-700 leading-relaxed mb-6 line-clamp-3">
-                  {testimony.story}
-                </p>
 
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-500">
-                    {new Date(
-                      testimony.date
-                    ).toLocaleDateString()}
-                  </p>
-
-                  <span className="bg-[#008080]/10 text-[#008080] text-xs px-3 py-1 rounded-full font-semibold">
-                    Shared Testimony
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
           {/* ========================================= */}
           {/* TESTIMONY MODAL */}
           {/* ========================================= */}
@@ -463,7 +481,7 @@ export const Testimonies = () => {
             </div>
           )}
           {/* EMPTY STATE */}
-          {testimonies.length === 0 && (
+          {testimonies.length === 0 ? !loading : (
             <div className="text-center py-20">
               <div className="text-7xl mb-4">🙏</div>
 
