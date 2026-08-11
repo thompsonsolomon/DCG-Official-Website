@@ -140,7 +140,7 @@ export const Live = () => {
               </p>
 
               <p className="text-sm font-semibold text-[#008080]">
-                Sundays • 10:00 AM
+                Sundays • 8:00 AM
               </p>
             </div>
 
