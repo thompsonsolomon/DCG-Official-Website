@@ -9,8 +9,8 @@ import {
   Images,
   MessageSquareHeart,
   Mail,
+  ClipboardList,
 } from 'lucide-react'
-import path from 'path'
 
 export const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -32,6 +32,11 @@ const menuItems = [
     path: '/admin/events',
     icon: <CalendarDays size={20} />,
   },
+ {
+  label: 'Event Registrations',
+  path: '/admin/event-registrations',
+  icon: <ClipboardList size={20} />,
+},
 
   {
     label: 'Sermons',

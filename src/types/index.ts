@@ -97,3 +97,48 @@ export interface LiveStream {
   createdAt: Date
   updatedAt: Date
 }
+
+export type MemberType = 'member' | 'non-member'
+
+export type AgeGroup = 'adult' | 'youth' | 'teenager' | 'child'
+
+export interface EventRegistration {
+  id?: string
+
+  eventId: string
+  eventTitle: string
+
+  name: string
+  email: string
+  phone: string
+  category: string
+
+  gender: 'male' | 'female'
+
+  ageGroup: AgeGroup
+  
+
+  memberType: MemberType
+
+  // RCCG branch
+  branch: string
+  needsAccommodation: boolean
+
+  // Only really needed for non-members
+  churchName?: string
+
+  // Automatically assigned
+  studyGroup: string
+  accommodation: string
+
+  createdAt?: any
+}
+
+export interface ConventionSettings {
+  id?: string
+
+  studyGroupCount: number
+  accommodationCount: number
+
+  updatedAt?: any
+}

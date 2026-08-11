@@ -33,6 +33,7 @@ import ProtectedRoute from './config/ProtectedRoute'
 import PWAInstall from './components/PWAInstall'
 import { EventDetails } from './pages/EventDetails'
 import AssetManager from './admin/AdminAssetsManager'
+import { AdminRegistrations } from './admin/AdminRegistrations'
 
 // Layout
 
@@ -81,6 +82,8 @@ export default function App() {
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/admin/actions" element={<AdminAction />} />
           <Route path="/admin/assets" element={<AssetManager />} />
+          <Route path="/admin/event-registrations" element={<AdminRegistrations />}
+/>
         </Route>
 
       </Routes>
