@@ -103,9 +103,9 @@ export type MemberType = 'member' | 'non-member'
 export type AgeGroup = 'adult' | 'youth' | 'teenager' | 'child'
 
 export interface EventRegistration {
-  id?: string
-
+  // eventId:string
   eventId: string
+  id?: string
   eventTitle: string
 
   name: string
@@ -128,8 +128,8 @@ export interface EventRegistration {
   churchName?: string
 
   // Automatically assigned
-  studyGroup: string
-  accommodation: string
+  studyGroup: string | null
+  accommodation: string | null
 
   createdAt?: any
 }
