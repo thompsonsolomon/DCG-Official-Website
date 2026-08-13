@@ -34,6 +34,7 @@ import PWAInstall from './components/PWAInstall'
 import { EventDetails } from './pages/EventDetails'
 import AssetManager from './admin/AdminAssetsManager'
 import { AdminRegistrations } from './admin/AdminRegistrations'
+import { EventSetup } from './admin/AdminEventSetup'
 
 // Layout
 
@@ -82,8 +83,8 @@ export default function App() {
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/admin/actions" element={<AdminAction />} />
           <Route path="/admin/assets" element={<AssetManager />} />
-          <Route path="/admin/event-registrations" element={<AdminRegistrations />}
-/>
+          <Route path="/admin/event-registrations" element={<AdminRegistrations />}/>
+          <Route path="/admin/event-setup" element={<EventSetup />} />
         </Route>
 
       </Routes>

@@ -10,6 +10,7 @@ import {
   MessageSquareHeart,
   Mail,
   ClipboardList,
+  Settings,
 } from 'lucide-react'
 
 export const AdminLayout = () => {
@@ -32,11 +33,19 @@ const menuItems = [
     path: '/admin/events',
     icon: <CalendarDays size={20} />,
   },
+
+ {
+  label: 'Event Setup',
+  path: '/admin/event-setup',
+  icon: <Settings size={20} />,
+},
  {
   label: 'Event Registrations',
   path: '/admin/event-registrations',
   icon: <ClipboardList size={20} />,
 },
+
+
 
   {
     label: 'Sermons',
