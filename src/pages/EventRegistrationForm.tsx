@@ -37,6 +37,7 @@ type Registration = {
   phone: string
   gender: 'male' | 'female' | ''
   age: string
+  address: string
   category:
     | 'adult'
     | 'youth'
@@ -76,11 +77,13 @@ const initialRegistration: Registration = {
   phone: '',
   gender: '',
   age: '',
+  address: '',
   category: '',
 
   isDCGMember: '',
   branch: '',
   otherBranch: '',
+
   churchName: '',
 
   needsAccommodation: false,
@@ -991,6 +994,26 @@ console.log(getAvailableLanguages())
                 />
               </div>
 
+   {/* AGE */}
+
+              <div>
+                <label className="form-label">
+                  Address *
+                </label>
+
+                <input
+                  type="text"
+                  name="address"
+                  value={
+                    registration.address
+                  }
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  placeholder="Akure, Lagos, etc"
+                  className="form-input"
+                />
+              </div>
               {/* CATEGORY */}
 
               <div>

@@ -111,6 +111,7 @@ export interface EventRegistration {
   name: string
   fullName:string
   email: string
+  address: string
   phone: string
   category: string
 

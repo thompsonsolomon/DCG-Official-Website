@@ -21,10 +21,12 @@ import {
   ChevronDown,
   Settings,
   CalendarDays,
+  Download,
 } from 'lucide-react'
 
 import { db } from '@/config/firebase'
 import { Event, EventRegistration } from '@/types'
+import { useNavigate } from 'react-router-dom'
 
 /* =========================================================
    TYPES
@@ -61,6 +63,7 @@ const defaultSettings: ConventionSettings = {
 ========================================================= */
 
 export const AdminRegistrations = () => {
+  const navigate = useNavigate()
   /* -------------------------------------------------------
      EVENTS
   ------------------------------------------------------- */
@@ -80,7 +83,7 @@ export const AdminRegistrations = () => {
 
   const [registrationsLoading, setRegistrationsLoading] =
     useState(false)
-    console.log(registrations)
+  console.log(registrations)
 
   /* -------------------------------------------------------
      SETTINGS
@@ -218,9 +221,9 @@ export const AdminRegistrations = () => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const data: EventRegistration[]= snapshot.docs
+        const data: EventRegistration[] = snapshot.docs
           .map((item) => ({
-            ...(item.data()as Omit <EventRegistration, "id">),
+            ...(item.data() as Omit<EventRegistration, "id">),
             id: item.id,
           }))
           .filter(
@@ -328,12 +331,12 @@ export const AdminRegistrations = () => {
           (item, i) =>
             i === index
               ? {
-                  ...item,
-                  [field]:
-                    field === 'capacity'
-                      ? Number(value)
-                      : value,
-                }
+                ...item,
+                [field]:
+                  field === 'capacity'
+                    ? Number(value)
+                    : value,
+              }
               : item
         ),
     }))
@@ -419,9 +422,9 @@ export const AdminRegistrations = () => {
           (group, i) =>
             i === index
               ? {
-                  ...group,
-                  [field]: value,
-                }
+                ...group,
+                [field]: value,
+              }
               : group
         ),
     }))
@@ -663,7 +666,7 @@ export const AdminRegistrations = () => {
               settings.accommodations.find(
                 (room) =>
                   roomOccupancy[
-                    room.name
+                  room.name
                   ] < room.capacity
               )
 
@@ -863,11 +866,10 @@ export const AdminRegistrations = () => {
                     event.id || ''
                   )
                 }
-                className={`text-left border rounded-2xl overflow-hidden transition hover:shadow-lg ${
-                  selectedEventId === event.id
+                className={`text-left border rounded-2xl overflow-hidden transition hover:shadow-lg ${selectedEventId === event.id
                     ? 'border-[#008080] ring-2 ring-[#008080]/20'
                     : 'border-gray-200'
-                }`}
+                  }`}
               >
 
                 {event.Imgurl ? (
@@ -891,8 +893,8 @@ export const AdminRegistrations = () => {
                   <p className="text-sm text-gray-500 mt-1">
                     {event.date
                       ? new Date(
-                          event.date
-                        ).toLocaleDateString()
+                        event.date
+                      ).toLocaleDateString()
                       : 'No date'}
                   </p>
 
@@ -936,8 +938,8 @@ export const AdminRegistrations = () => {
                 <p className="text-white/80 mt-2">
                   {selectedEvent.date
                     ? new Date(
-                        selectedEvent.date
-                      ).toLocaleDateString()
+                      selectedEvent.date
+                    ).toLocaleDateString()
                     : ''}
                   {selectedEvent.location
                     ? ` • ${selectedEvent.location}`
@@ -1063,7 +1065,9 @@ export const AdminRegistrations = () => {
 
             <div className="p-6 border-b flex items-center justify-between">
 
-              <div>
+              <div className='flex items-end justify-between w-full'>
+                <div>
+
                 <h2 className="text-2xl font-bold">
                   Registered Participants
                 </h2>
@@ -1076,6 +1080,21 @@ export const AdminRegistrations = () => {
                     : ''}{' '}
                   registered for this event.
                 </p>
+
+                    </div>
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/admin/events/${selectedEventId}/registrations/print`
+                    )
+                  }
+                  disabled={!selectedEventId}
+                  className="flex items-center gap-2 bg-[#008080] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#006b6b] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download size={18} />
+
+                  Download Registrations
+                </button>
               </div>
 
               {registrationsLoading && (
@@ -1087,7 +1106,7 @@ export const AdminRegistrations = () => {
             </div>
 
             {registrations.length === 0 &&
-            !registrationsLoading ? (
+              !registrationsLoading ? (
               <div className="p-14 text-center">
 
                 <Users className="mx-auto text-gray-300 w-12 h-12 mb-4" />
@@ -1114,7 +1133,7 @@ export const AdminRegistrations = () => {
                       <th className="px-5 py-4 text-left text-sm">
                         Participant
                       </th>
-                    
+
 
                       <th className="px-5 py-4 text-left text-sm">
                         Contact
@@ -1122,6 +1141,10 @@ export const AdminRegistrations = () => {
 
                       <th className="px-5 py-4 text-left text-sm">
                         Type
+                      </th>
+
+                      <th className="px-5 py-4 text-left text-sm">
+                        Address
                       </th>
 
                       <th className="px-5 py-4 text-left text-sm">
@@ -1195,6 +1218,12 @@ export const AdminRegistrations = () => {
 
                           <td className="px-5 py-4 capitalize">
                             {
+                              registration.address || "-"
+                            }
+                          </td>
+
+                          <td className="px-5 py-4 capitalize">
+                            {
                               registration.category
                             }
                           </td>
@@ -1203,13 +1232,12 @@ export const AdminRegistrations = () => {
 
                             <p>
                               {
-                                registration.branch ||
-                                '—'
+                                registration.branch
                               }
                             </p>
 
                             {registration.churchName && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className=" text-gray-500 mt-1">
                                 {
                                   registration.churchName
                                 }

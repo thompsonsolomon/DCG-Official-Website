@@ -48,7 +48,6 @@ export const AdminDashboard = () => {
       gradient: 'from-orange-500 to-red-500',
     },
   ]
-
   return (
     <div className="space-y-10">
 
