@@ -10,6 +10,8 @@ import {
   Mail,
   ArrowUpRight,
 } from 'lucide-react'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/config/firebase'
 
 export const AdminDashboard = () => {
   const { events } = useEvents()
@@ -62,9 +64,16 @@ export const AdminDashboard = () => {
           </p>
         </div>
 
+        <div className='flex gap-3'>
         <div className="bg-[#008080]/10 text-[#008080] px-5 py-3 rounded-2xl font-semibold">
           DCGFAN CMS
         </div>
+
+        <button onClick={()=> signOut(auth)} className="bg-red-400 text-white px-3 py-2 rounded-2xl font-semibold">
+          Sign Out 
+        </button>
+        </div>
+
       </div>
 
       {/* STATS */}
