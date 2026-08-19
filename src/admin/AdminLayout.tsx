@@ -39,6 +39,8 @@ const menuItems = [
   path: '/admin/event-setup',
   icon: <Settings size={20} />,
 },
+
+
  {
   label: 'Event Registrations',
   path: '/admin/event-registrations',

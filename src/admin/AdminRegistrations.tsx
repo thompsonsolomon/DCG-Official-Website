@@ -22,11 +22,13 @@ import {
   Settings,
   CalendarDays,
   Download,
+  X,
 } from 'lucide-react'
 
 import { db } from '@/config/firebase'
 import { Event, EventRegistration } from '@/types'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import AdminManualRegistration from './AdminManualRegistration'
 
 /* =========================================================
    TYPES
@@ -73,6 +75,10 @@ export const AdminRegistrations = () => {
 
   const [selectedEventId, setSelectedEventId] =
     useState<string>('')
+
+    const [showManualRegistration, setShowManualRegistration] =
+  useState(false)
+
 
   /* -------------------------------------------------------
      REGISTRATIONS
@@ -867,8 +873,8 @@ export const AdminRegistrations = () => {
                   )
                 }
                 className={`text-left border rounded-2xl overflow-hidden transition hover:shadow-lg ${selectedEventId === event.id
-                    ? 'border-[#008080] ring-2 ring-[#008080]/20'
-                    : 'border-gray-200'
+                  ? 'border-[#008080] ring-2 ring-[#008080]/20'
+                  : 'border-gray-200'
                   }`}
               >
 
@@ -948,30 +954,47 @@ export const AdminRegistrations = () => {
 
               </div>
 
-              <button
-                type="button"
-                onClick={fixAllocations}
-                disabled={
-                  allocating ||
-                  registrationsLoading
-                }
-                className="bg-white text-[#008080] px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 disabled:opacity-60 transition"
-              >
-                {allocating ? (
-                  <>
-                    <RefreshCw
-                      size={18}
-                      className="animate-spin"
-                    />
-                    Allocating...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw size={18} />
-                    Fix All Allocations
-                  </>
-                )}
-              </button>
+            <div className="gap-4 flex flex-col">
+
+  <button
+    type="button"
+    onClick={fixAllocations}
+    disabled={
+      allocating ||
+      registrationsLoading
+    }
+    className="bg-white text-[#008080] px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-100 disabled:opacity-60 transition"
+  >
+    {allocating ? (
+      <>
+        <RefreshCw
+          size={18}
+          className="animate-spin"
+        />
+        Allocating...
+      </>
+    ) : (
+      <>
+        <RefreshCw size={18} />
+        Fix All Allocations
+      </>
+    )}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => setShowManualRegistration(true)}
+    className="bg-white text-[#008080] px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition"
+  >
+    Manual Reg
+  </button>
+
+</div>
+
+
+
+
+
 
             </div>
 
@@ -1061,239 +1084,239 @@ export const AdminRegistrations = () => {
 
           {/* REGISTRATIONS */}
 
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+        {/* ===================================================
+    REGISTRATIONS
+=================================================== */}
 
-            <div className="p-6 border-b flex items-center justify-between">
+<div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
 
-              <div className='flex items-end justify-between w-full'>
-                <div>
+  {/* HEADER */}
 
-                <h2 className="text-2xl font-bold">
-                  Registered Participants
-                </h2>
+  <div className="p-6 border-b flex items-center justify-between">
 
-                <p className="text-sm text-gray-500 mt-1">
-                  {registrations.length}{' '}
-                  participant
-                  {registrations.length !== 1
-                    ? 's'
-                    : ''}{' '}
-                  registered for this event.
-                </p>
+    <div className="flex items-end justify-between w-full">
 
-                    </div>
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/admin/events/${selectedEventId}/registrations/print`
-                    )
-                  }
-                  disabled={!selectedEventId}
-                  className="flex items-center gap-2 bg-[#008080] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#006b6b] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Download size={18} />
+      <div>
+        <h2 className="text-2xl font-bold">
+          Registered Participants
+        </h2>
 
-                  Download Registrations
-                </button>
-              </div>
+        <p className="text-sm text-gray-500 mt-1">
+          {registrations.length}{' '}
+          participant
+          {registrations.length !== 1 ? 's' : ''}{' '}
+          registered for this event.
+        </p>
+      </div>
 
-              {registrationsLoading && (
-                <RefreshCw
-                  className="animate-spin text-[#008080]"
-                />
-              )}
+      <button
+        onClick={() =>
+          navigate(
+            `/admin/events/${selectedEventId}/registrations/print`
+          )
+        }
+        disabled={!selectedEventId}
+        className="flex items-center gap-2 bg-[#008080] text-white px-5 py-3 rounded-xl font-semibold hover:bg-[#006b6b] disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <Download size={18} />
 
-            </div>
+        Download Registrations
+      </button>
 
-            {registrations.length === 0 &&
-              !registrationsLoading ? (
-              <div className="p-14 text-center">
+    </div>
 
-                <Users className="mx-auto text-gray-300 w-12 h-12 mb-4" />
+    {registrationsLoading && (
+      <RefreshCw
+        className="animate-spin text-[#008080] ml-4"
+      />
+    )}
 
-                <h3 className="font-semibold text-lg">
-                  No registrations yet
-                </h3>
-
-                <p className="text-gray-500 mt-1">
-                  Registrations for this event
-                  will appear here.
-                </p>
-
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-
-                <table className="w-full">
-
-                  <thead className="bg-gray-50 border-b">
-
-                    <tr>
-
-                      <th className="px-5 py-4 text-left text-sm">
-                        Participant
-                      </th>
+  </div>
 
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Contact
-                      </th>
+  {/* EMPTY STATE */}
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Type
-                      </th>
+  {registrations.length === 0 &&
+  !registrationsLoading ? (
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Address
-                      </th>
+    <div className="p-14 text-center">
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Age Group
-                      </th>
+      <Users className="mx-auto text-gray-300 w-12 h-12 mb-4" />
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Branch
-                      </th>
+      <h3 className="font-semibold text-lg">
+        No registrations yet
+      </h3>
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Study Group
-                      </th>
+      <p className="text-gray-500 mt-1">
+        Registrations for this event will appear here.
+      </p>
 
-                      <th className="px-5 py-4 text-left text-sm">
-                        Accommodation
-                      </th>
+    </div>
 
-                    </tr>
+  ) : (
 
-                  </thead>
+    /* =================================================
+       REGISTRATION TABLE
+    ================================================= */
 
-                  <tbody>
+    <div className="overflow-x-auto">
 
-                    {registrations.map(
-                      (registration) => (
-                        <tr
-                          key={
-                            registration.id
-                          }
-                          className="border-b hover:bg-gray-50 transition"
-                        >
+      <table className="w-full min-w-[1000px] border-collapse">
 
-                          <td className="px-5 py-4">
+        {/* TABLE HEADER */}
 
-                            <p className="font-semibold">
-                              {
-                                registration.fullName
-                              }
-                            </p>
+        <thead>
 
-                            <p className="text-sm text-gray-500 capitalize">
-                              {
-                                registration.gender
-                              }
-                            </p>
+          <tr className="bg-gray-100 border-b border-gray-300">
 
-                          </td>
+            <th className="px-4 py-4 text-center text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              S/N
+            </th>
 
-                          <td className="px-5 py-4">
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              NAME
+            </th>
 
-                            <p className="text-sm">
-                              {
-                                registration.email
-                              }
-                            </p>
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              PHONE NO
+            </th>
 
-                            <p className="text-sm text-gray-500">
-                              {
-                                registration.phone
-                              }
-                            </p>
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              ADDRESS
+            </th>
 
-                          </td>
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              E-MAIL
+            </th>
 
-                          <td className="px-5 py-4 capitalize">
-                            {
-                              registration.gender
-                            }
-                          </td>
+            <th className="px-4 py-4 text-center text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              SEX
+            </th>
 
-                          <td className="px-5 py-4 capitalize">
-                            {
-                              registration.address || "-"
-                            }
-                          </td>
+            <th className="px-4 py-4 text-center text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
+              S/G
+            </th>
 
-                          <td className="px-5 py-4 capitalize">
-                            {
-                              registration.category
-                            }
-                          </td>
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 whitespace-nowrap">
+              ACCOMD
+            </th>
 
-                          <td className="px-5 py-4">
+          </tr>
 
-                            <p>
-                              {
-                                registration.branch
-                              }
-                            </p>
+        </thead>
 
-                            {registration.churchName && (
-                              <p className=" text-gray-500 mt-1">
-                                {
-                                  registration.churchName
-                                }
-                              </p>
-                            )}
 
-                          </td>
+        {/* TABLE BODY */}
 
-                          <td className="px-5 py-4">
+        <tbody>
 
-                            {registration.studyGroup ? (
-                              <span className="inline-flex px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
-                                {
-                                  registration.studyGroup
-                                }
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">
-                                Not assigned
-                              </span>
-                            )}
+          {registrations.map(
+            (registration, index) => (
 
-                          </td>
+              <tr
+                key={registration.id}
+                className="border-b border-gray-200 hover:bg-gray-50 transition"
+              >
 
-                          <td className="px-5 py-4">
+                {/* S/N */}
 
-                            {registration.accommodation ? (
-                              <span className="inline-flex px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-semibold">
-                                {
-                                  registration.accommodation
-                                }
-                              </span>
-                            ) : registration.needsAccommodation ? (
-                              <span className="text-orange-500 text-sm font-medium">
-                                Not assigned
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-sm">
-                                Not required
-                              </span>
-                            )}
+                <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700 border-r border-gray-200">
+                  {index + 1}.
+                </td>
 
-                          </td>
 
-                        </tr>
-                      )
-                    )}
+                {/* NAME */}
 
-                  </tbody>
+                <td className="px-5 py-4 border-r border-gray-200">
 
-                </table>
+                  <p className="font-semibold text-gray-900">
+                    {registration.fullName || '-'}
+                  </p>
 
-              </div>
-            )}
+                </td>
 
-          </div>
+
+                {/* PHONE */}
+
+                <td className="px-5 py-4 border-r border-gray-200">
+
+                  <span className="text-sm text-gray-700 whitespace-nowrap">
+                    {registration.phone || '-'}
+                  </span>
+
+                </td>
+
+
+                {/* ADDRESS */}
+
+                <td className="px-5 py-4 border-r border-gray-200">
+
+                  <span className="text-sm text-gray-700">
+                    {registration.address || '-'}
+                  </span>
+
+                </td>
+
+
+                {/* EMAIL */}
+
+                <td className="px-5 py-4 border-r border-gray-200">
+
+                  <span className="text-sm text-gray-700">
+                    {registration.email || '-'}
+                  </span>
+
+                </td>
+
+
+                {/* SEX */}
+
+                <td className="px-4 py-4 text-center border-r border-gray-200">
+
+                  <span className="font-semibold uppercase text-gray-800">
+                    {registration.gender
+                      ? registration.gender.charAt(0).toUpperCase()
+                      : '-'}
+                  </span>
+
+                </td>
+
+
+                {/* STUDY GROUP */}
+
+                <td className="px-4 py-4 text-center border-r border-gray-200">
+
+                  <span className="font-semibold text-gray-800">
+                    {registration.studyGroup || '-'}
+                  </span>
+
+                </td>
+
+
+                {/* ACCOMMODATION */}
+
+                <td className="px-5 py-4">
+
+                  <span className="text-sm font-semibold text-gray-800">
+                    {registration.accommodation || '-'}
+                  </span>
+
+                </td>
+
+              </tr>
+
+            )
+          )}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  )}
+
+</div>
 
         </div>
       )}
@@ -1318,6 +1341,73 @@ export const AdminRegistrations = () => {
 
         </div>
       )}
+
+
+
+{showManualRegistration && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+
+    {/* BACKDROP */}
+    <div
+      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      onClick={() =>
+        setShowManualRegistration(false)
+      }
+    />
+
+  
+  </div>
+)}
+
+{showManualRegistration && selectedEventId && (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+
+    {/* BACKDROP */}
+    <div
+      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      onClick={() => setShowManualRegistration(false)}
+    />
+
+    {/* MODAL */}
+    <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl">
+
+      {/* HEADER */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-5 flex items-center justify-between">
+
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">
+            Manual Registration
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Register someone manually from the admin portal.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowManualRegistration(false)}
+          className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition"
+        >
+          <X size={20} />
+        </button>
+
+      </div>
+
+      {/* FORM */}
+      <div className="p-6">
+        <AdminManualRegistration
+          eventId={selectedEventId}
+          onSuccess={() => {
+            setShowManualRegistration(false)
+          }}
+        />
+      </div>
+
+    </div>
+  </div>
+)}
+
 
     </div>
   )

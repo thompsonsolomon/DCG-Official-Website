@@ -36,6 +36,7 @@ import AssetManager from './admin/AdminAssetsManager'
 import { AdminRegistrations } from './admin/AdminRegistrations'
 import { EventSetup } from './admin/AdminEventSetup'
 import EventRegistrationPrintout from './admin/EventRegistrationPrintout'
+import AdminManualRegistration from './admin/AdminManualRegistration'
 
 // Layout
 
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/admin/assets" element={<AssetManager />} />
           <Route path="/admin/event-registrations" element={<AdminRegistrations />}/>
           <Route path="/admin/event-setup" element={<EventSetup />} />
+                    {/* <Route path="/admin/event-manual" element={<AdminManualRegistration />} />           */}
           <Route path="/admin/events/:eventId/registrations/print" element={<EventRegistrationPrintout />}
 />
         </Route>
