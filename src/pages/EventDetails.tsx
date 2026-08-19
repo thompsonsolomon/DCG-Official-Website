@@ -4,6 +4,8 @@ import Breadcrumb from '@/UI/Breadcrum'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import EventRegistrationForm from './EventRegistrationForm'
+import { useState } from 'react'
+import RegistrationClosedModal from '@/UI/RegistrationClosed'
 
 export const EventDetails = () => {
   const { id } = useParams()
@@ -12,6 +14,10 @@ export const EventDetails = () => {
   const event = events.find(
     (item) => item.id === id
   )
+
+  const [showRegistrationClosed, setShowRegistrationClosed] =
+  useState(false)
+
 
   /*
   ============================================================
@@ -286,12 +292,30 @@ export const EventDetails = () => {
                       this powerful gathering.
                     </p>
 
-                    <a
-                      href="#registration"
-                      className="block text-center bg-white text-[#008080] py-3 rounded-2xl font-bold hover:bg-gray-100 transition"
-                    >
-                      Register Now
-                    </a>
+                  {/* <a
+  href="#"
+  onClick={(e) => {
+    e.preventDefault()
+    alert('Registration is no longer available for this event.')
+  }}
+  className="block text-center bg-white text-[#008080] py-3 rounded-2xl font-bold hover:bg-gray-100 transition"
+>
+  Register Now
+</a> */}
+
+<button
+  type="button"
+  onClick={() => setShowRegistrationClosed(true)}
+  className="block w-full text-center bg-white text-[#008080] py-3 rounded-2xl font-bold hover:bg-gray-100 transition"
+>
+  Register Now
+</button>
+
+
+<RegistrationClosedModal
+  isOpen={showRegistrationClosed}
+  onClose={() => setShowRegistrationClosed(false)}
+/>
 
                   </div>
 
@@ -307,14 +331,14 @@ export const EventDetails = () => {
               REGISTRATION COMPONENT
           ================================================== */}
 
-          {event?.id && (
+          {/* {event?.id && (
             <EventRegistrationForm
               eventId={event.id}
               eventTitle={
                 event.EventTitle
               }
             />
-          )}
+          )} */}
 
         </>
 
