@@ -45,10 +45,6 @@ type Registration = {
   gender?: string
   age?: number | string
 
-  /*
-   * Older registrations may still contain
-   * these fields.
-   */
   category?: string
   ageGroup?: string
   type?: string
@@ -57,24 +53,10 @@ type Registration = {
   otherBranch?: string
   churchName?: string
 
-  /*
-   * STUDY GROUP
-   *
-   * Examples:
-   * Yoruba7
-   * English3
-   * Youth
-   * Children
-   */
   studyGroup?: string | null
-
-  /*
-   * Examples:
-   * Yoruba
-   * English
-   */
   studyGroupPreference?: string | null
 
+  accommodation?: string | null
   accommodationRoom?: string | null
   needsAccommodation?: boolean
 
@@ -103,13 +85,12 @@ const REGISTRATION_DATE =
   'AUGUST 18TH – 22ND'
 
 /* =========================================================
-   HELPERS
+   TEXT NORMALIZATION
 ========================================================= */
 
-/*
- * Normalize text for reliable comparisons.
- */
-const normalize = (value: unknown) => {
+const normalize = (
+  value: unknown
+): string => {
   return String(value ?? '')
     .trim()
     .toLowerCase()
@@ -117,238 +98,102 @@ const normalize = (value: unknown) => {
 }
 
 /* =========================================================
-   STUDY GROUP / CATEGORY HELPERS
+   CATEGORY DETECTION
 ========================================================= */
 
-/*
- * Get raw study group.
- */
-const getRawStudyGroup = (
+const getCategorySources = (
   registration: Registration
-) => {
-  return normalize(
-    registration.studyGroup
-  )
+): string[] => {
+  return [
+    registration.studyGroup,
+    registration.studyGroupPreference,
+    registration.category,
+    registration.ageGroup,
+    registration.type,
+  ]
+    .map(normalize)
+    .filter(Boolean)
 }
-
-/*
- * Get study group preference.
- */
-const getStudyGroupPreference = (
-  registration: Registration
-) => {
-  return normalize(
-    registration.studyGroupPreference
-  )
-}
-
-/*
- * Get MAIN CATEGORY.
- *
- * The hierarchy is:
- *
- * Adult
- *   ├── Yoruba
- *   └── English
- *
- * Youth
- *
- * Children
- *
- * Study group is the primary source.
- */
-
 
 const getStudyGroupCategory = (
   registration: Registration
-) => {
-  const studyGroup =
-    getRawStudyGroup(
-      registration
-    )
+): AgeFilter | '' => {
+  const sources =
+    getCategorySources(registration)
 
-  /*
-   * =======================================================
-   * IMPORTANT
-   * =======================================================
-   *
-   * studyGroup determines the MAIN CATEGORY.
-   *
-   * studyGroupPreference is ONLY used later
-   * to determine Yoruba / English for Adults.
-   */
+  /* CHILDREN */
+  const isChildren =
+    sources.some((value) => {
+      return (
+        value.includes('children') ||
+        value.includes('child')
+      )
+    })
 
-  /*
-   * =======================================================
-   * CHILDREN
-   * =======================================================
-   *
-   * Examples:
-   *
-   * Children Group
-   * Children
-   * Children1
-   * Children 1
-   * Child Group
-   */
-  if (
-    studyGroup.includes('children') ||
-    studyGroup.includes('child')
-  ) {
+  if (isChildren) {
     return 'children'
   }
 
-  /*
-   * =======================================================
-   * YOUTH
-   * =======================================================
-   *
-   * Examples:
-   *
-   * Youth Group
-   * Youth
-   * Youth1
-   * Youth 1
-   * Young Adult
-   */
-  if (
-    studyGroup.includes('youth') ||
-    studyGroup.includes('young adult') ||
-    studyGroup.includes('youngadult')
-  ) {
+  /* YOUTH */
+  const isYouth =
+    sources.some((value) => {
+      return (
+        value.includes('youth') ||
+        value.includes('young adult') ||
+        value.includes('youngadult')
+      )
+    })
+
+  if (isYouth) {
     return 'youth'
   }
 
-  /*
-   * =======================================================
-   * ADULT
-   * =======================================================
-   *
-   * Examples:
-   *
-   * Yoruba7
-   * Yoruba 7
-   * English5
-   * English 5
-   * Yoruba Group
-   * English Group
-   */
-  if (
-    studyGroup.includes('yoruba') ||
-    studyGroup.includes('english')
-  ) {
+  /* ADULT */
+  const isAdult =
+    sources.some((value) => {
+      return (
+        value.includes('adult') ||
+        value.includes('yoruba') ||
+        value.includes('english')
+      )
+    })
+
+  if (isAdult) {
     return 'adult'
-  }
-
-  /*
-   * =======================================================
-   * FALLBACK
-   * =======================================================
-   *
-   * Only use old category fields if the
-   * studyGroup doesn't tell us anything.
-   */
-
-  const oldCategory =
-    normalize(
-      registration.category
-    )
-
-  const oldAgeGroup =
-    normalize(
-      registration.ageGroup
-    )
-
-  const oldType =
-    normalize(
-      registration.type
-    )
-
-  const fallbackValues = [
-    oldCategory,
-    oldAgeGroup,
-    oldType,
-  ].filter(Boolean)
-
-  for (
-    const value of fallbackValues
-  ) {
-    if (
-      value.includes('children') ||
-      value.includes('child')
-    ) {
-      return 'children'
-    }
-
-    if (
-      value.includes('youth') ||
-      value.includes('young adult')
-    ) {
-      return 'youth'
-    }
-
-    if (
-      value.includes('adult')
-    ) {
-      return 'adult'
-    }
   }
 
   return ''
 }
 
-/*
- * Determine Adult class.
- *
- * Only relevant when category = Adult.
- */
+/* =========================================================
+   ADULT CLASS
+========================================================= */
+
 const getAdultClass = (
   registration: Registration
-) => {
-  /*
-   * First determine the actual category.
-   */
+): AdultClassFilter => {
   const category =
-    getStudyGroupCategory(
-      registration
-    )
+    getStudyGroupCategory(registration)
 
-  /*
-   * Youth and Children do NOT have
-   * Adult classes.
-   */
-  if (
-    category !== 'adult'
-  ) {
+  if (category !== 'adult') {
     return ''
   }
 
-  const preference =
-    getStudyGroupPreference(
-      registration
-    )
+  const sources =
+    getCategorySources(registration)
 
-  const studyGroup =
-    getRawStudyGroup(
-      registration
-    )
-
-  /*
-   * Adult Yoruba
-   */
   if (
-    preference === 'yoruba' ||
-    studyGroup.includes('yoruba')
+    sources.some((value) =>
+      value.includes('yoruba')
+    )
   ) {
     return 'yoruba'
   }
 
-  /*
-   * Adult English
-   */
   if (
-    preference === 'english' ||
-    studyGroup.includes('english')
+    sources.some((value) =>
+      value.includes('english')
+    )
   ) {
     return 'english'
   }
@@ -356,16 +201,15 @@ const getAdultClass = (
   return ''
 }
 
-/*
- * Display category.
- */
+/* =========================================================
+   CATEGORY DISPLAY
+========================================================= */
+
 const formatStudyGroupCategory = (
   registration: Registration
 ) => {
   const category =
-    getStudyGroupCategory(
-      registration
-    )
+    getStudyGroupCategory(registration)
 
   switch (category) {
     case 'adult':
@@ -382,16 +226,15 @@ const formatStudyGroupCategory = (
   }
 }
 
-/*
- * Display Adult class.
- */
+/* =========================================================
+   ADULT CLASS DISPLAY
+========================================================= */
+
 const formatAdultClass = (
   registration: Registration
 ) => {
   const adultClass =
-    getAdultClass(
-      registration
-    )
+    getAdultClass(registration)
 
   switch (adultClass) {
     case 'yoruba':
@@ -405,19 +248,43 @@ const formatAdultClass = (
   }
 }
 
-/*
- * Format study group for display.
- *
- * Yoruba7 -> Yoruba 7
- * English3 -> English 3
- */
+/* =========================================================
+   STUDY GROUP DISPLAY
+========================================================= */
+
 const formatStudyGroup = (
   registration: Registration
 ) => {
   const raw =
-    registration.studyGroup?.trim()
+    String(
+      registration.studyGroup ?? ''
+    ).trim()
 
   if (!raw) {
+    const category =
+      getStudyGroupCategory(registration)
+
+    if (category === 'children') {
+      return 'Children'
+    }
+
+    if (category === 'youth') {
+      return 'Youth'
+    }
+
+    if (category === 'adult') {
+      const adultClass =
+        getAdultClass(registration)
+
+      if (adultClass === 'yoruba') {
+        return 'Yoruba'
+      }
+
+      if (adultClass === 'english') {
+        return 'English'
+      }
+    }
+
     return '-'
   }
 
@@ -468,14 +335,13 @@ const formatAdultClassFilter = (
    BRANCH HELPERS
 ========================================================= */
 
-/*
- * Get raw branch.
- */
 const getRawBranch = (
   registration: Registration
 ) => {
   const branch =
-    registration.branch?.trim()
+    String(
+      registration.branch ?? ''
+    ).trim()
 
   if (
     branch &&
@@ -488,17 +354,12 @@ const getRawBranch = (
   return ''
 }
 
-/*
- * Get branch displayed on printout.
- */
 const getDisplayBranch = (
   registration: Registration,
   availableRealBranches: string[]
 ) => {
   const rawBranch =
-    getRawBranch(
-      registration
-    )
+    getRawBranch(registration)
 
   if (!rawBranch) {
     return 'Others'
@@ -528,19 +389,17 @@ const formatSex = (
   const value =
     normalize(gender)
 
-  if (value === 'male') {
+  if (
+    value === 'male' ||
+    value === 'm'
+  ) {
     return 'M'
   }
 
-  if (value === 'female') {
-    return 'F'
-  }
-
-  if (value === 'm') {
-    return 'M'
-  }
-
-  if (value === 'f') {
+  if (
+    value === 'female' ||
+    value === 'f'
+  ) {
     return 'F'
   }
 
@@ -561,6 +420,15 @@ const formatAccommodation = (
     ) !== 'none'
   ) {
     return registration.accommodationRoom
+  }
+
+  if (
+    registration.accommodation &&
+    normalize(
+      registration.accommodation
+    ) !== 'none'
+  ) {
+    return registration.accommodation
   }
 
   if (
@@ -699,38 +567,37 @@ export default function EventRegistrationPrintout() {
             })
           ) as Registration[]
 
-        console.log(
-          'ALL REGISTRATION DATA:',
-          data
+        console.table(
+          data.map((item) => ({
+            name:
+              item.fullName ?? '',
+
+            studyGroup:
+              item.studyGroup ?? '',
+
+            preference:
+              item.studyGroupPreference ??
+              '',
+
+            categoryField:
+              item.category ?? '',
+
+            ageGroup:
+              item.ageGroup ?? '',
+
+            type:
+              item.type ?? '',
+
+            DETECTED_CATEGORY:
+              getStudyGroupCategory(
+                item
+              ),
+
+            DETECTED_ADULT_CLASS:
+              getAdultClass(item),
+          }))
         )
 
-        console.log(
-          'STUDY GROUP VALUES:',
-          data.map(
-            (item) => ({
-              fullName:
-                item.fullName,
-              studyGroup:
-                item.studyGroup,
-              studyGroupPreference:
-                item.studyGroupPreference,
-              category:
-                getStudyGroupCategory(
-                  item
-                ),
-              adultClass:
-                getAdultClass(
-                  item
-                ),
-            })
-          )
-        )
-
-        /*
-         * Find records that our current
-         * classification system cannot
-         * identify.
-         */
         const unclassified =
           data.filter(
             (item) =>
@@ -750,10 +617,6 @@ export default function EventRegistrationPrintout() {
 
         setRegistrations(data)
 
-        /*
-         * Get event title from first
-         * registration that has one.
-         */
         const firstRegistration =
           data.find(
             (registration) =>
@@ -791,17 +654,12 @@ export default function EventRegistrationPrintout() {
         registrations
           .map(
             (registration) =>
-              getRawBranch(
-                registration
-              )
+              getRawBranch(registration)
           )
           .filter(Boolean)
 
       const uniqueBranches =
-        new Map<
-          string,
-          string
-        >()
+        new Map<string, string>()
 
       branches.forEach(
         (branch) => {
@@ -809,9 +667,7 @@ export default function EventRegistrationPrintout() {
             normalize(branch)
 
           if (
-            !uniqueBranches.has(
-              key
-            )
+            !uniqueBranches.has(key)
           ) {
             uniqueBranches.set(
               key,
@@ -853,12 +709,8 @@ export default function EventRegistrationPrintout() {
             const exists =
               availableRealBranches.some(
                 (branch) =>
-                  normalize(
-                    branch
-                  ) ===
-                  normalize(
-                    rawBranch
-                  )
+                  normalize(branch) ===
+                  normalize(rawBranch)
               )
 
             return !exists
@@ -866,9 +718,7 @@ export default function EventRegistrationPrintout() {
         )
 
       if (hasOthers) {
-        options.push(
-          OTHER_BRANCH
-        )
+        options.push(OTHER_BRANCH)
       }
 
       return options
@@ -884,9 +734,6 @@ export default function EventRegistrationPrintout() {
   const matchesAgeRange = (
     registration: Registration
   ) => {
-    /*
-     * No category filter.
-     */
     if (
       selectedAgeRange ===
       'all'
@@ -912,10 +759,6 @@ export default function EventRegistrationPrintout() {
   const matchesAdultClass = (
     registration: Registration
   ) => {
-    /*
-     * Adult class filter only matters
-     * when Adult is selected.
-     */
     if (
       selectedAgeRange !==
       'adult'
@@ -923,9 +766,6 @@ export default function EventRegistrationPrintout() {
       return true
     }
 
-    /*
-     * All Adult classes.
-     */
     if (
       selectedAdultClass ===
       'all'
@@ -933,13 +773,10 @@ export default function EventRegistrationPrintout() {
       return true
     }
 
-    const adultClass =
+    return (
       getAdultClass(
         registration
-      )
-
-    return (
-      adultClass ===
+      ) ===
       selectedAdultClass
     )
   }
@@ -952,12 +789,6 @@ export default function EventRegistrationPrintout() {
     useMemo(() => {
       return registrations.filter(
         (registration) => {
-          /*
-           * =================================================
-           * BRANCH
-           * =================================================
-           */
-
           const displayBranch =
             getDisplayBranch(
               registration,
@@ -976,8 +807,9 @@ export default function EventRegistrationPrintout() {
               OTHER_BRANCH
             ) {
               branchMatches =
-                displayBranch ===
-                'Others'
+                normalize(
+                  displayBranch
+                ) === 'others'
             } else {
               branchMatches =
                 normalize(
@@ -989,22 +821,10 @@ export default function EventRegistrationPrintout() {
             }
           }
 
-          /*
-           * =================================================
-           * CATEGORY
-           * =================================================
-           */
-
           const categoryMatches =
             matchesAgeRange(
               registration
             )
-
-          /*
-           * =================================================
-           * ADULT CLASS
-           * =================================================
-           */
 
           const adultClassMatches =
             matchesAdultClass(
@@ -1025,6 +845,21 @@ export default function EventRegistrationPrintout() {
       selectedAgeRange,
       selectedAdultClass,
     ])
+
+  /* =======================================================
+     TOTAL SELECTED PARTICIPANTS
+  ======================================================= */
+
+  /*
+   * THIS IS THE IMPORTANT VALUE.
+   *
+   * It represents the exact number of registrations
+   * that will appear in the generated/printed document.
+   *
+   * Every filter affects this number.
+   */
+  const selectedDocumentTotal =
+    filteredRegistrations.length
 
   /* =======================================================
      SUMMARY COUNTS
@@ -1098,7 +933,7 @@ export default function EventRegistrationPrintout() {
     }, [registrations])
 
   /* =======================================================
-     SELECTED BRANCH LABEL
+     LABELS
   ======================================================= */
 
   const selectedBranchLabel =
@@ -1108,10 +943,6 @@ export default function EventRegistrationPrintout() {
         OTHER_BRANCH
       ? 'OTHERS'
       : selectedBranch
-
-  /* =======================================================
-     SELECTED CATEGORY LABEL
-  ======================================================= */
 
   const selectedCategoryLabel =
     formatAgeFilter(
@@ -1127,12 +958,29 @@ export default function EventRegistrationPrintout() {
       : ''
 
   /* =======================================================
+     FILE STATUS LABEL
+  ======================================================= */
+
+  const statusLabelForFile = () => {
+    if (
+      selectedAgeRange ===
+        'adult' &&
+      selectedAdultClass !==
+        'all'
+    ) {
+      return `Adult-${selectedAdultClassLabel}`
+    }
+
+    return selectedCategoryLabel
+  }
+
+  /* =======================================================
      DOWNLOAD PDF
   ======================================================= */
 
   const downloadPDF = () => {
     if (
-      filteredRegistrations.length ===
+      selectedDocumentTotal ===
       0
     ) {
       toast.error(
@@ -1213,15 +1061,12 @@ export default function EventRegistrationPrintout() {
         32
       )
 
-      /*
-       * Status / category
-       */
       let statusLabel =
         selectedCategoryLabel
 
       if (
         selectedAgeRange ===
-        'adult' &&
+          'adult' &&
         selectedAdultClass !==
           'all'
       ) {
@@ -1244,6 +1089,31 @@ export default function EventRegistrationPrintout() {
         `NAME OF ASSEMBLY: ${selectedBranchLabel}`,
         8,
         39
+      )
+
+      /* ===================================================
+         TOTAL SELECTED PARTICIPANTS
+      =================================================== */
+
+      /*
+       * The total is now printed directly inside
+       * the document header.
+       */
+
+      pdf.setFont(
+        'helvetica',
+        'bold'
+      )
+
+      pdf.setFontSize(10)
+
+      pdf.text(
+        `TOTAL SELECTED PARTICIPANTS: ${selectedDocumentTotal}`,
+        pageWidth - 8,
+        39,
+        {
+          align: 'right',
+        }
       )
 
       /* ===================================================
@@ -1274,9 +1144,6 @@ export default function EventRegistrationPrintout() {
               registration.gender
             ),
 
-            /*
-             * S/G
-             */
             formatStudyGroup(
               registration
             ),
@@ -1345,64 +1212,40 @@ export default function EventRegistrationPrintout() {
           },
 
           columnStyles: {
-            /*
-             * S/N
-             */
             0: {
               cellWidth: 10,
               halign:
                 'center',
             },
 
-            /*
-             * NAME
-             */
             1: {
               cellWidth: 42,
             },
 
-            /*
-             * PHONE
-             */
             2: {
               cellWidth: 32,
             },
 
-            /*
-             * ADDRESS
-             */
             3: {
               cellWidth: 48,
             },
 
-            /*
-             * EMAIL
-             */
             4: {
               cellWidth: 52,
             },
 
-            /*
-             * SEX
-             */
             5: {
               cellWidth: 15,
               halign:
                 'center',
             },
 
-            /*
-             * S/G
-             */
             6: {
               cellWidth: 25,
               halign:
                 'center',
             },
 
-            /*
-             * ACCOMOD
-             */
             7: {
               cellWidth: 27,
             },
@@ -1423,9 +1266,15 @@ export default function EventRegistrationPrintout() {
 
             pdf.setFontSize(7)
 
+            /*
+             * Keep the total in the footer too.
+             * This makes the total visible even when
+             * the table spans multiple pages.
+             */
+
             pdf.text(
-              `Total: ${filteredRegistrations.length} participant${
-                filteredRegistrations.length !==
+              `Total Selected: ${selectedDocumentTotal} participant${
+                selectedDocumentTotal !==
                 1
                   ? 's'
                   : ''
@@ -1468,7 +1317,7 @@ export default function EventRegistrationPrintout() {
         )
 
       const filename =
-        `${safeEventTitle}-${safeBranch}-${safeCategory}-onsite-registration.pdf`
+        `${safeEventTitle}-${safeBranch}-${safeCategory}-${selectedDocumentTotal}-participants-onsite-registration.pdf`
 
       pdf.save(filename)
 
@@ -1488,29 +1337,12 @@ export default function EventRegistrationPrintout() {
   }
 
   /* =======================================================
-     PDF FILE STATUS LABEL
-  ======================================================= */
-
-  const statusLabelForFile = () => {
-    if (
-      selectedAgeRange ===
-      'adult' &&
-      selectedAdultClass !==
-        'all'
-    ) {
-      return `Adult-${selectedAdultClassLabel}`
-    }
-
-    return selectedCategoryLabel
-  }
-
-  /* =======================================================
      PRINT
   ======================================================= */
 
   const printPage = () => {
     if (
-      filteredRegistrations.length ===
+      selectedDocumentTotal ===
       0
     ) {
       toast.error(
@@ -1562,8 +1394,6 @@ export default function EventRegistrationPrintout() {
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-            {/* LEFT */}
-
             <div className="flex items-center gap-3">
 
               <button
@@ -1592,8 +1422,6 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            {/* ACTIONS */}
-
             <div className="flex gap-3">
 
               <button
@@ -1602,7 +1430,7 @@ export default function EventRegistrationPrintout() {
                   printPage
                 }
                 disabled={
-                  filteredRegistrations.length ===
+                  selectedDocumentTotal ===
                   0
                 }
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-gray-200 bg-white font-semibold hover:bg-gray-50 disabled:opacity-50"
@@ -1620,7 +1448,7 @@ export default function EventRegistrationPrintout() {
                   downloadPDF
                 }
                 disabled={
-                  filteredRegistrations.length ===
+                  selectedDocumentTotal ===
                   0
                 }
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#008080] text-white font-semibold hover:bg-[#006b6b] disabled:opacity-50"
@@ -1681,9 +1509,7 @@ export default function EventRegistrationPrintout() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-            {/* =================================================
-                ASSEMBLY
-            ================================================= */}
+            {/* ASSEMBLY */}
 
             <div>
 
@@ -1734,9 +1560,7 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            {/* =================================================
-                CATEGORY
-            ================================================= */}
+            {/* CATEGORY */}
 
             <div>
 
@@ -1757,11 +1581,6 @@ export default function EventRegistrationPrintout() {
                     value
                   )
 
-                  /*
-                   * Reset Adult class
-                   * whenever category
-                   * changes.
-                   */
                   if (
                     value !==
                     'adult'
@@ -1794,9 +1613,7 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            {/* =================================================
-                ADULT CLASS
-            ================================================= */}
+            {/* ADULT CLASS */}
 
             <div>
 
@@ -1849,8 +1666,6 @@ export default function EventRegistrationPrintout() {
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
 
-            {/* TOTAL */}
-
             <div>
 
               <p className="text-sm text-gray-500">
@@ -1858,14 +1673,10 @@ export default function EventRegistrationPrintout() {
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {
-                  registrations.length
-                }
+                {registrations.length}
               </p>
 
             </div>
-
-            {/* ADULT */}
 
             <div>
 
@@ -1874,9 +1685,7 @@ export default function EventRegistrationPrintout() {
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {
-                  categoryCounts.adult
-                }
+                {categoryCounts.adult}
               </p>
 
               <p className="text-xs text-gray-400 mt-1">
@@ -1892,8 +1701,6 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            {/* YOUTH */}
-
             <div>
 
               <p className="text-sm text-gray-500">
@@ -1901,14 +1708,10 @@ export default function EventRegistrationPrintout() {
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {
-                  categoryCounts.youth
-                }
+                {categoryCounts.youth}
               </p>
 
             </div>
-
-            {/* CHILDREN */}
 
             <div>
 
@@ -1917,25 +1720,25 @@ export default function EventRegistrationPrintout() {
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {
-                  categoryCounts.children
-                }
+                {categoryCounts.children}
               </p>
 
             </div>
 
-            {/* CURRENT */}
+            {/* CURRENT SELECTION */}
 
-            <div>
+            <div className="rounded-xl bg-[#008080]/10 px-4 py-3">
 
-              <p className="text-sm text-gray-500">
-                Current Selection
+              <p className="text-sm text-[#006b6b] font-semibold">
+                Total Selected
               </p>
 
-              <p className="text-2xl font-bold mt-1">
-                {
-                  filteredRegistrations.length
-                }
+              <p className="text-3xl font-bold text-[#008080] mt-1">
+                {selectedDocumentTotal}
+              </p>
+
+              <p className="text-xs text-gray-500 mt-1">
+                Participants in document
               </p>
 
             </div>
@@ -1950,9 +1753,7 @@ export default function EventRegistrationPrintout() {
 
         <section className="bg-white shadow-sm border border-gray-100 p-6 md:p-8">
 
-          {/* =================================================
-              HEADER
-          ================================================= */}
+          {/* HEADER */}
 
           <div className="text-center mb-6">
 
@@ -1989,10 +1790,23 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            <div className="text-left mt-2 font-bold uppercase">
+            <div className="flex justify-between items-center mt-2">
 
-              NAME OF ASSEMBLY:{' '}
-              {selectedBranchLabel}
+              <div className="text-left font-bold uppercase">
+                NAME OF ASSEMBLY:{' '}
+                {selectedBranchLabel}
+              </div>
+
+              {/* =================================================
+                  TOTAL ON PRINTED DOCUMENT
+              ================================================= */}
+
+              <div className="text-right font-bold uppercase">
+                TOTAL SELECTED PARTICIPANTS:{' '}
+                <span className="text-[#008080]">
+                  {selectedDocumentTotal}
+                </span>
+              </div>
 
             </div>
 
@@ -2050,6 +1864,7 @@ export default function EventRegistrationPrintout() {
 
                 {filteredRegistrations.length ===
                 0 ? (
+
                   <tr>
 
                     <td
@@ -2061,12 +1876,15 @@ export default function EventRegistrationPrintout() {
                     </td>
 
                   </tr>
+
                 ) : (
+
                   filteredRegistrations.map(
                     (
                       registration,
                       index
                     ) => (
+
                       <tr
                         key={
                           registration.id
@@ -2111,8 +1929,6 @@ export default function EventRegistrationPrintout() {
                           )}
                         </td>
 
-                        {/* S/G */}
-
                         <td className="px-3 py-3 border border-black text-center">
 
                           <div className="font-semibold">
@@ -2122,6 +1938,7 @@ export default function EventRegistrationPrintout() {
                           </div>
 
                           <div className="text-xs text-gray-600 mt-1">
+
                             {formatStudyGroupCategory(
                               registration
                             )}
@@ -2133,6 +1950,7 @@ export default function EventRegistrationPrintout() {
                               ` — ${formatAdultClass(
                                 registration
                               )}`}
+
                           </div>
 
                         </td>
@@ -2144,13 +1962,33 @@ export default function EventRegistrationPrintout() {
                         </td>
 
                       </tr>
+
                     )
                   )
+
                 )}
 
               </tbody>
 
             </table>
+
+          </div>
+
+          {/* =================================================
+              DOCUMENT TOTAL
+          ================================================= */}
+
+          <div className="flex justify-end mt-4">
+
+            <div className="border-2 border-black px-5 py-3 font-bold uppercase text-sm">
+
+              TOTAL SELECTED PARTICIPANTS:{' '}
+
+              <span className="text-lg">
+                {selectedDocumentTotal}
+              </span>
+
+            </div>
 
           </div>
 
