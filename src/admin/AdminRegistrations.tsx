@@ -956,7 +956,7 @@ export const AdminRegistrations = () => {
 
             <div className="gap-4 flex flex-col">
 
-  <button
+  {/* <button
     type="button"
     onClick={fixAllocations}
     disabled={
@@ -979,7 +979,7 @@ export const AdminRegistrations = () => {
         Fix All Allocations
       </>
     )}
-  </button>
+  </button> */}
 
   <button
     type="button"
@@ -1197,8 +1197,11 @@ export const AdminRegistrations = () => {
               S/G
             </th>
 
-            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 whitespace-nowrap">
+            <th className="px-4 py-4 text-center text-sm font-bold text-gray-800 border-r border-gray-300 whitespace-nowrap">
               ACCOMD
+            </th>
+            <th className="px-5 py-4 text-left text-sm font-bold text-gray-800 whitespace-nowrap">
+              ID
             </th>
 
           </tr>
@@ -1222,6 +1225,7 @@ export const AdminRegistrations = () => {
 
                 <td className="px-4 py-4 text-center text-sm font-semibold text-gray-700 border-r border-gray-200">
                   {index + 1}.
+                
                 </td>
 
 
@@ -1295,12 +1299,21 @@ export const AdminRegistrations = () => {
 
                 {/* ACCOMMODATION */}
 
-                <td className="px-5 py-4">
+                <td className="px-4 py-4 text-center border-r border-gray-200">
 
                   <span className="text-sm font-semibold text-gray-800">
                     {registration.accommodation || '-'}
                   </span>
 
+                </td>
+
+                <td className="px-5 py-4">
+                   <span className="text-sm font-semibold text-gray-800">
+  {
+                    registration.id
+                  }                  </span>
+
+                  
                 </td>
 
               </tr>

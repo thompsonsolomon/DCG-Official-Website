@@ -28,8 +28,11 @@ type AgeFilter =
   | 'adult'
   | 'children'
   | 'youth'
-  | 'teen'
-  | 'youth-teen'
+
+type AdultClassFilter =
+  | 'all'
+  | 'yoruba'
+  | 'english'
 
 type Registration = {
   id: string
@@ -37,31 +40,51 @@ type Registration = {
   fullName?: string
   email?: string
   phone?: string
+  address?: string
 
   gender?: string
   age?: number | string
-  category?: string
 
-  isRCCGMember?: boolean
-  isDCGMember?: boolean
+  /*
+   * Older registrations may still contain
+   * these fields.
+   */
+  category?: string
+  ageGroup?: string
+  type?: string
 
   branch?: string
   otherBranch?: string
   churchName?: string
 
-  address?: string
+  /*
+   * STUDY GROUP
+   *
+   * Examples:
+   * Yoruba7
+   * English3
+   * Youth
+   * Children
+   */
+  studyGroup?: string | null
 
-  needsAccommodation?: boolean
+  /*
+   * Examples:
+   * Yoruba
+   * English
+   */
+  studyGroupPreference?: string | null
 
   accommodationRoom?: string | null
-  studyGroup?: string | null
-  studyGroupPreference?: string
-
-  status?: string
+  needsAccommodation?: boolean
 
   eventTitle?: string
 
+  status?: string
+  registrationMethod?: string
+
   createdAt?: any
+  updatedAt?: any
 }
 
 /* =========================================================
@@ -70,46 +93,344 @@ type Registration = {
 
 const OTHER_BRANCH = '__others__'
 
+const CONVENTION_NAME =
+  '24TH ANNUAL CONVENTION 2026'
+
+const CONVENTION_THEME =
+  'CREATE IN ME A PURE HEART (PSM 51:10)'
+
+const REGISTRATION_DATE =
+  'AUGUST 18TH – 22ND'
+
 /* =========================================================
    HELPERS
 ========================================================= */
 
+/*
+ * Normalize text for reliable comparisons.
+ */
 const normalize = (value: unknown) => {
   return String(value ?? '')
     .trim()
     .toLowerCase()
+    .replace(/\s+/g, ' ')
+}
+
+/* =========================================================
+   STUDY GROUP / CATEGORY HELPERS
+========================================================= */
+
+/*
+ * Get raw study group.
+ */
+const getRawStudyGroup = (
+  registration: Registration
+) => {
+  return normalize(
+    registration.studyGroup
+  )
 }
 
 /*
- * Convert a category into a nice display name.
+ * Get study group preference.
  */
-const formatCategory = (category?: string) => {
-  if (!category) return '-'
+const getStudyGroupPreference = (
+  registration: Registration
+) => {
+  return normalize(
+    registration.studyGroupPreference
+  )
+}
 
-  switch (normalize(category)) {
+/*
+ * Get MAIN CATEGORY.
+ *
+ * The hierarchy is:
+ *
+ * Adult
+ *   ├── Yoruba
+ *   └── English
+ *
+ * Youth
+ *
+ * Children
+ *
+ * Study group is the primary source.
+ */
+
+
+const getStudyGroupCategory = (
+  registration: Registration
+) => {
+  const studyGroup =
+    getRawStudyGroup(
+      registration
+    )
+
+  /*
+   * =======================================================
+   * IMPORTANT
+   * =======================================================
+   *
+   * studyGroup determines the MAIN CATEGORY.
+   *
+   * studyGroupPreference is ONLY used later
+   * to determine Yoruba / English for Adults.
+   */
+
+  /*
+   * =======================================================
+   * CHILDREN
+   * =======================================================
+   *
+   * Examples:
+   *
+   * Children Group
+   * Children
+   * Children1
+   * Children 1
+   * Child Group
+   */
+  if (
+    studyGroup.includes('children') ||
+    studyGroup.includes('child')
+  ) {
+    return 'children'
+  }
+
+  /*
+   * =======================================================
+   * YOUTH
+   * =======================================================
+   *
+   * Examples:
+   *
+   * Youth Group
+   * Youth
+   * Youth1
+   * Youth 1
+   * Young Adult
+   */
+  if (
+    studyGroup.includes('youth') ||
+    studyGroup.includes('young adult') ||
+    studyGroup.includes('youngadult')
+  ) {
+    return 'youth'
+  }
+
+  /*
+   * =======================================================
+   * ADULT
+   * =======================================================
+   *
+   * Examples:
+   *
+   * Yoruba7
+   * Yoruba 7
+   * English5
+   * English 5
+   * Yoruba Group
+   * English Group
+   */
+  if (
+    studyGroup.includes('yoruba') ||
+    studyGroup.includes('english')
+  ) {
+    return 'adult'
+  }
+
+  /*
+   * =======================================================
+   * FALLBACK
+   * =======================================================
+   *
+   * Only use old category fields if the
+   * studyGroup doesn't tell us anything.
+   */
+
+  const oldCategory =
+    normalize(
+      registration.category
+    )
+
+  const oldAgeGroup =
+    normalize(
+      registration.ageGroup
+    )
+
+  const oldType =
+    normalize(
+      registration.type
+    )
+
+  const fallbackValues = [
+    oldCategory,
+    oldAgeGroup,
+    oldType,
+  ].filter(Boolean)
+
+  for (
+    const value of fallbackValues
+  ) {
+    if (
+      value.includes('children') ||
+      value.includes('child')
+    ) {
+      return 'children'
+    }
+
+    if (
+      value.includes('youth') ||
+      value.includes('young adult')
+    ) {
+      return 'youth'
+    }
+
+    if (
+      value.includes('adult')
+    ) {
+      return 'adult'
+    }
+  }
+
+  return ''
+}
+
+/*
+ * Determine Adult class.
+ *
+ * Only relevant when category = Adult.
+ */
+const getAdultClass = (
+  registration: Registration
+) => {
+  /*
+   * First determine the actual category.
+   */
+  const category =
+    getStudyGroupCategory(
+      registration
+    )
+
+  /*
+   * Youth and Children do NOT have
+   * Adult classes.
+   */
+  if (
+    category !== 'adult'
+  ) {
+    return ''
+  }
+
+  const preference =
+    getStudyGroupPreference(
+      registration
+    )
+
+  const studyGroup =
+    getRawStudyGroup(
+      registration
+    )
+
+  /*
+   * Adult Yoruba
+   */
+  if (
+    preference === 'yoruba' ||
+    studyGroup.includes('yoruba')
+  ) {
+    return 'yoruba'
+  }
+
+  /*
+   * Adult English
+   */
+  if (
+    preference === 'english' ||
+    studyGroup.includes('english')
+  ) {
+    return 'english'
+  }
+
+  return ''
+}
+
+/*
+ * Display category.
+ */
+const formatStudyGroupCategory = (
+  registration: Registration
+) => {
+  const category =
+    getStudyGroupCategory(
+      registration
+    )
+
+  switch (category) {
     case 'adult':
       return 'Adult'
 
     case 'youth':
       return 'Youth'
 
-    case 'teen':
-    case 'teenager':
-      return 'Teenager'
-
-    case 'child':
     case 'children':
       return 'Children'
 
     default:
-      return category
+      return '-'
   }
 }
 
 /*
- * Convert the selected age filter into a nice
- * display name for the PDF.
+ * Display Adult class.
  */
+const formatAdultClass = (
+  registration: Registration
+) => {
+  const adultClass =
+    getAdultClass(
+      registration
+    )
+
+  switch (adultClass) {
+    case 'yoruba':
+      return 'Yoruba'
+
+    case 'english':
+      return 'English'
+
+    default:
+      return '-'
+  }
+}
+
+/*
+ * Format study group for display.
+ *
+ * Yoruba7 -> Yoruba 7
+ * English3 -> English 3
+ */
+const formatStudyGroup = (
+  registration: Registration
+) => {
+  const raw =
+    registration.studyGroup?.trim()
+
+  if (!raw) {
+    return '-'
+  }
+
+  return raw.replace(
+    /([a-zA-Z]+)(\d+)/,
+    '$1 $2'
+  )
+}
+
+/* =========================================================
+   CATEGORY LABELS
+========================================================= */
+
 const formatAgeFilter = (
   filter: AgeFilter
 ) => {
@@ -123,55 +444,32 @@ const formatAgeFilter = (
     case 'youth':
       return 'Youth'
 
-    case 'teen':
-      return 'Teenager'
-
-    case 'youth-teen':
-      return 'Youth / Teenager'
-
     default:
       return 'All Categories'
   }
 }
 
-/*
- * Member status.
- */
-const formatMemberStatus = (
-  registration: Registration
+const formatAdultClassFilter = (
+  filter: AdultClassFilter
 ) => {
-  if (
-    typeof registration.isRCCGMember ===
-    'boolean'
-  ) {
-    return registration.isRCCGMember
-      ? 'Yes'
-      : 'No'
-  }
+  switch (filter) {
+    case 'yoruba':
+      return 'Yoruba'
 
-  if (
-    typeof registration.isDCGMember ===
-    'boolean'
-  ) {
-    return registration.isDCGMember
-      ? 'Yes'
-      : 'No'
-  }
+    case 'english':
+      return 'English'
 
-  return '-'
+    default:
+      return 'All Adult Classes'
+  }
 }
 
+/* =========================================================
+   BRANCH HELPERS
+========================================================= */
+
 /*
- * Get the RAW branch value from a registration.
- *
- * We intentionally do NOT immediately use otherBranch
- * or churchName here.
- *
- * This allows us to distinguish:
- *
- *   Actual event branch
- *   vs
- *   Other branch
+ * Get raw branch.
  */
 const getRawBranch = (
   registration: Registration
@@ -191,17 +489,16 @@ const getRawBranch = (
 }
 
 /*
- * Get the branch that should be displayed.
- *
- * If it is not a recognised branch belonging to this
- * event, it becomes "Others".
+ * Get branch displayed on printout.
  */
 const getDisplayBranch = (
   registration: Registration,
   availableRealBranches: string[]
 ) => {
   const rawBranch =
-    getRawBranch(registration)
+    getRawBranch(
+      registration
+    )
 
   if (!rawBranch) {
     return 'Others'
@@ -221,41 +518,72 @@ const getDisplayBranch = (
   return 'Others'
 }
 
-/*
- * Date formatter.
- */
-const getCreatedDate = (
-  createdAt: any
+/* =========================================================
+   SEX
+========================================================= */
+
+const formatSex = (
+  gender?: string
 ) => {
-  if (!createdAt) return '-'
+  const value =
+    normalize(gender)
 
-  try {
-    if (
-      typeof createdAt.toDate ===
-      'function'
-    ) {
-      return createdAt
-        .toDate()
-        .toLocaleString()
-    }
-
-    if (
-      createdAt instanceof Date
-    ) {
-      return createdAt.toLocaleString()
-    }
-
-    return new Date(
-      createdAt
-    ).toLocaleString()
-  } catch {
-    return '-'
+  if (value === 'male') {
+    return 'M'
   }
+
+  if (value === 'female') {
+    return 'F'
+  }
+
+  if (value === 'm') {
+    return 'M'
+  }
+
+  if (value === 'f') {
+    return 'F'
+  }
+
+  return gender || '-'
 }
 
-/*
- * Safely create a filename.
- */
+/* =========================================================
+   ACCOMMODATION
+========================================================= */
+
+const formatAccommodation = (
+  registration: Registration
+) => {
+  if (
+    registration.accommodationRoom &&
+    normalize(
+      registration.accommodationRoom
+    ) !== 'none'
+  ) {
+    return registration.accommodationRoom
+  }
+
+  if (
+    registration.needsAccommodation ===
+    false
+  ) {
+    return 'NIL'
+  }
+
+  if (
+    registration.needsAccommodation ===
+    true
+  ) {
+    return 'Requested'
+  }
+
+  return '-'
+}
+
+/* =========================================================
+   FILE NAME
+========================================================= */
+
 const makeSafeFileName = (
   value: string
 ) => {
@@ -270,7 +598,8 @@ const makeSafeFileName = (
     )
     .replace(
       /^-|-$/g,
-      '')
+      ''
+    )
     .toLowerCase()
 }
 
@@ -310,6 +639,14 @@ export default function EventRegistrationPrintout() {
   ] = useState<AgeFilter>('all')
 
   const [
+    selectedAdultClass,
+    setSelectedAdultClass,
+  ] =
+    useState<AdultClassFilter>(
+      'all'
+    )
+
+  const [
     eventTitle,
     setEventTitle,
   ] = useState(
@@ -336,9 +673,6 @@ export default function EventRegistrationPrintout() {
       try {
         setLoading(true)
 
-        /*
-         * ONLY registrations for this event.
-         */
         const registrationsQuery =
           query(
             collection(
@@ -365,13 +699,66 @@ export default function EventRegistrationPrintout() {
             })
           ) as Registration[]
 
+        console.log(
+          'ALL REGISTRATION DATA:',
+          data
+        )
+
+        console.log(
+          'STUDY GROUP VALUES:',
+          data.map(
+            (item) => ({
+              fullName:
+                item.fullName,
+              studyGroup:
+                item.studyGroup,
+              studyGroupPreference:
+                item.studyGroupPreference,
+              category:
+                getStudyGroupCategory(
+                  item
+                ),
+              adultClass:
+                getAdultClass(
+                  item
+                ),
+            })
+          )
+        )
+
+        /*
+         * Find records that our current
+         * classification system cannot
+         * identify.
+         */
+        const unclassified =
+          data.filter(
+            (item) =>
+              !getStudyGroupCategory(
+                item
+              )
+          )
+
+        if (
+          unclassified.length > 0
+        ) {
+          console.warn(
+            'UNCLASSIFIED REGISTRATIONS:',
+            unclassified
+          )
+        }
+
         setRegistrations(data)
 
         /*
-         * Get event title from the registration data.
+         * Get event title from first
+         * registration that has one.
          */
         const firstRegistration =
-          data[0]
+          data.find(
+            (registration) =>
+              registration.eventTitle
+          )
 
         if (
           firstRegistration?.eventTitle
@@ -395,7 +782,7 @@ export default function EventRegistrationPrintout() {
     }
 
   /* =======================================================
-     REAL BRANCHES FOR THIS EVENT
+     AVAILABLE BRANCHES
   ======================================================= */
 
   const availableRealBranches =
@@ -410,9 +797,6 @@ export default function EventRegistrationPrintout() {
           )
           .filter(Boolean)
 
-      /*
-       * Remove duplicate branches case-insensitively.
-       */
       const uniqueBranches =
         new Map<
           string,
@@ -424,7 +808,11 @@ export default function EventRegistrationPrintout() {
           const key =
             normalize(branch)
 
-          if (!uniqueBranches.has(key)) {
+          if (
+            !uniqueBranches.has(
+              key
+            )
+          ) {
             uniqueBranches.set(
               key,
               branch
@@ -450,10 +838,6 @@ export default function EventRegistrationPrintout() {
         ...availableRealBranches,
       ]
 
-      /*
-       * Check if there are registrations that
-       * belong under Others.
-       */
       const hasOthers =
         registrations.some(
           (registration) => {
@@ -469,7 +853,9 @@ export default function EventRegistrationPrintout() {
             const exists =
               availableRealBranches.some(
                 (branch) =>
-                  normalize(branch) ===
+                  normalize(
+                    branch
+                  ) ===
                   normalize(
                     rawBranch
                   )
@@ -492,69 +878,70 @@ export default function EventRegistrationPrintout() {
     ])
 
   /* =======================================================
-     AGE FILTER
+     CATEGORY FILTER
   ======================================================= */
 
   const matchesAgeRange = (
     registration: Registration
   ) => {
+    /*
+     * No category filter.
+     */
     if (
-      selectedAgeRange === 'all'
+      selectedAgeRange ===
+      'all'
     ) {
       return true
     }
 
     const category =
-      normalize(
-        registration.category
+      getStudyGroupCategory(
+        registration
       )
 
-    switch (
+    return (
+      category ===
       selectedAgeRange
+    )
+  }
+
+  /* =======================================================
+     ADULT CLASS FILTER
+  ======================================================= */
+
+  const matchesAdultClass = (
+    registration: Registration
+  ) => {
+    /*
+     * Adult class filter only matters
+     * when Adult is selected.
+     */
+    if (
+      selectedAgeRange !==
+      'adult'
     ) {
-      case 'adult':
-        return (
-          category ===
-          'adult'
-        )
-
-      case 'children':
-        return (
-          category === 'child' ||
-          category === 'children'
-        )
-
-      case 'youth':
-        return (
-          category ===
-          'youth'
-        )
-
-      case 'teen':
-        return (
-          category ===
-            'teenager' ||
-          category === 'teen'
-        )
-
-      /*
-       * IMPORTANT:
-       *
-       * Youth / Teenager means BOTH
-       * youth and teenagers.
-       */
-      case 'youth-teen':
-        return (
-          category ===
-            'youth' ||
-          category ===
-            'teenager' ||
-          category === 'teen'
-        )
-
-      default:
-        return true
+      return true
     }
+
+    /*
+     * All Adult classes.
+     */
+    if (
+      selectedAdultClass ===
+      'all'
+    ) {
+      return true
+    }
+
+    const adultClass =
+      getAdultClass(
+        registration
+      )
+
+    return (
+      adultClass ===
+      selectedAdultClass
+    )
   }
 
   /* =======================================================
@@ -565,6 +952,12 @@ export default function EventRegistrationPrintout() {
     useMemo(() => {
       return registrations.filter(
         (registration) => {
+          /*
+           * =================================================
+           * BRANCH
+           * =================================================
+           */
+
           const displayBranch =
             getDisplayBranch(
               registration,
@@ -596,14 +989,32 @@ export default function EventRegistrationPrintout() {
             }
           }
 
-          const ageMatches =
+          /*
+           * =================================================
+           * CATEGORY
+           * =================================================
+           */
+
+          const categoryMatches =
             matchesAgeRange(
+              registration
+            )
+
+          /*
+           * =================================================
+           * ADULT CLASS
+           * =================================================
+           */
+
+          const adultClassMatches =
+            matchesAdultClass(
               registration
             )
 
           return (
             branchMatches &&
-            ageMatches
+            categoryMatches &&
+            adultClassMatches
           )
         }
       )
@@ -612,19 +1023,108 @@ export default function EventRegistrationPrintout() {
       availableRealBranches,
       selectedBranch,
       selectedAgeRange,
+      selectedAdultClass,
     ])
 
   /* =======================================================
-     DISPLAYED BRANCH LABEL
+     SUMMARY COUNTS
+  ======================================================= */
+
+  const categoryCounts =
+    useMemo(() => {
+      let adult = 0
+      let youth = 0
+      let children = 0
+
+      let adultYoruba = 0
+      let adultEnglish = 0
+
+      registrations.forEach(
+        (registration) => {
+          const category =
+            getStudyGroupCategory(
+              registration
+            )
+
+          if (
+            category ===
+            'adult'
+          ) {
+            adult++
+
+            const adultClass =
+              getAdultClass(
+                registration
+              )
+
+            if (
+              adultClass ===
+              'yoruba'
+            ) {
+              adultYoruba++
+            }
+
+            if (
+              adultClass ===
+              'english'
+            ) {
+              adultEnglish++
+            }
+          }
+
+          if (
+            category ===
+            'youth'
+          ) {
+            youth++
+          }
+
+          if (
+            category ===
+            'children'
+          ) {
+            children++
+          }
+        }
+      )
+
+      return {
+        adult,
+        youth,
+        children,
+        adultYoruba,
+        adultEnglish,
+      }
+    }, [registrations])
+
+  /* =======================================================
+     SELECTED BRANCH LABEL
   ======================================================= */
 
   const selectedBranchLabel =
     selectedBranch === 'all'
-      ? 'All Branches'
+      ? 'ALL ASSEMBLIES'
       : selectedBranch ===
         OTHER_BRANCH
-      ? 'Others'
+      ? 'OTHERS'
       : selectedBranch
+
+  /* =======================================================
+     SELECTED CATEGORY LABEL
+  ======================================================= */
+
+  const selectedCategoryLabel =
+    formatAgeFilter(
+      selectedAgeRange
+    )
+
+  const selectedAdultClassLabel =
+    selectedAgeRange ===
+    'adult'
+      ? formatAdultClassFilter(
+          selectedAdultClass
+        )
+      : ''
 
   /* =======================================================
      DOWNLOAD PDF
@@ -643,9 +1143,6 @@ export default function EventRegistrationPrintout() {
     }
 
     try {
-      /*
-       * LANDSCAPE A4
-       */
       const pdf =
         new jsPDF({
           orientation:
@@ -661,85 +1158,92 @@ export default function EventRegistrationPrintout() {
         pdf.internal.pageSize.getHeight()
 
       /* ===================================================
-         MAIN HEADER
+         HEADER
       =================================================== */
+
+      pdf.setTextColor(
+        30,
+        30,
+        30
+      )
 
       pdf.setFont(
         'helvetica',
         'bold'
       )
 
-      pdf.setFontSize(16)
+      pdf.setFontSize(15)
 
       pdf.text(
-        'DISCIPLES CHURCH OF GOD FOR ALL NATION',
+        'DISCIPLES CHURCH OF GOD FOR ALL NATIONS',
         pageWidth / 2,
-        12,
+        11,
         {
           align: 'center',
         }
       )
 
-      /*
-       * Branch + Event title
-       */
       pdf.setFontSize(12)
 
       pdf.text(
-        `${selectedBranchLabel} Registration for ${eventTitle}`,
+        CONVENTION_NAME,
         pageWidth / 2,
-        19,
+        18,
         {
           align: 'center',
         }
       )
 
-      /*
-       * Small subtitle
-       */
-      pdf.setFont(
-        'helvetica',
-        'normal'
-      )
-
-      pdf.setFontSize(8)
+      pdf.setFontSize(10)
 
       pdf.text(
-        'Event Registration Report',
+        `THEME: ${CONVENTION_THEME}`,
         pageWidth / 2,
-        25,
+        24,
         {
           align: 'center',
         }
       )
 
-      /* ===================================================
-         FILTER INFORMATION
-      =================================================== */
-
-      pdf.setFontSize(8)
+      pdf.setFontSize(9)
 
       pdf.text(
-        `Branch: ${selectedBranchLabel}`,
+        `REGISTRATION 2026 — ${REGISTRATION_DATE}`,
         8,
         32
       )
 
-      pdf.text(
-        `Category: ${formatAgeFilter(
-          selectedAgeRange
-        )}`,
-        8,
-        37
-      )
+      /*
+       * Status / category
+       */
+      let statusLabel =
+        selectedCategoryLabel
+
+      if (
+        selectedAgeRange ===
+        'adult' &&
+        selectedAdultClass !==
+          'all'
+      ) {
+        statusLabel =
+          `Adult — ${selectedAdultClassLabel}`
+      }
 
       pdf.text(
-        `Total Registrations: ${filteredRegistrations.length}`,
+        `STATUS: ${statusLabel.toUpperCase()}`,
         pageWidth - 8,
         32,
         {
           align: 'right',
         }
+      )
+
+      pdf.setFontSize(10)
+
+      pdf.text(
+        `NAME OF ASSEMBLY: ${selectedBranchLabel}`,
+        8,
+        39
       )
 
       /* ===================================================
@@ -757,53 +1261,29 @@ export default function EventRegistrationPrintout() {
             registration.fullName ||
               '-',
 
-            registration.email ||
-              '-',
-
             registration.phone ||
               '-',
 
-            registration.gender ||
+            registration.address ||
               '-',
 
-            registration.age ??
+            registration.email ||
               '-',
 
-            formatCategory(
-              registration.category
+            formatSex(
+              registration.gender
             ),
 
-            formatMemberStatus(
+            /*
+             * S/G
+             */
+            formatStudyGroup(
               registration
             ),
 
-            getDisplayBranch(
-              registration,
-              availableRealBranches
+            formatAccommodation(
+              registration
             ),
-
-            registration.churchName ||
-              '-',
-
-            registration.address ||
-              registration.otherBranch ||
-              '-',
-
-            registration.needsAccommodation
-              ? 'Yes'
-              : 'No',
-
-            registration.accommodationRoom ||
-              '-',
-
-            registration.studyGroupPreference ||
-              '-',
-
-            registration.studyGroup ||
-              '-',
-
-            registration.status ||
-              'registered',
           ]
         )
 
@@ -814,26 +1294,18 @@ export default function EventRegistrationPrintout() {
       autoTable(
         pdf,
         {
-          startY: 42,
+          startY: 44,
 
           head: [
             [
-              'No.',
-              'Full Name',
-              'Email',
-              'Phone',
-              'Gender',
-              'Age',
-              'Category',
-              'Member',
-              'Branch',
-              'Church',
-              'Address',
-              'Accommodation',
-              'Room',
-              'Preferred Group',
-              'Study Group',
-              'Status',
+              'S/N',
+              'NAME',
+              'PHONE NO',
+              'ADDRESS',
+              'E-MAIL',
+              'SEX',
+              'S/G',
+              'ACCOMOD',
             ],
           ],
 
@@ -842,102 +1314,108 @@ export default function EventRegistrationPrintout() {
           theme: 'grid',
 
           styles: {
-            fontSize: 6.2,
-            cellPadding: 1.8,
+            font:
+              'helvetica',
+            fontSize: 8,
+            cellPadding: 2,
             overflow:
               'linebreak',
-            valign: 'middle',
-            lineWidth: 0.1,
+            valign:
+              'middle',
+            lineWidth: 0.2,
+            textColor: [
+              30,
+              30,
+              30,
+            ],
           },
 
           headStyles: {
-            fontSize: 6.2,
+            fontSize: 8,
             fontStyle:
               'bold',
-            halign: 'center',
+            halign:
+              'center',
+            valign:
+              'middle',
           },
 
           bodyStyles: {
-            fontSize: 6.2,
+            fontSize: 8,
           },
 
           columnStyles: {
+            /*
+             * S/N
+             */
             0: {
-              cellWidth: 7,
+              cellWidth: 10,
+              halign:
+                'center',
             },
 
+            /*
+             * NAME
+             */
             1: {
-              cellWidth: 28,
+              cellWidth: 42,
             },
 
+            /*
+             * PHONE
+             */
             2: {
-              cellWidth: 30,
-            },
-
-            3: {
-              cellWidth: 22,
-            },
-
-            4: {
-              cellWidth: 13,
-            },
-
-            5: {
-              cellWidth: 9,
-            },
-
-            6: {
-              cellWidth: 17,
-            },
-
-            7: {
-              cellWidth: 11,
-            },
-
-            8: {
-              cellWidth: 24,
-            },
-
-            9: {
-              cellWidth: 24,
-            },
-
-            10: {
               cellWidth: 32,
             },
 
-            11: {
-              cellWidth: 16,
+            /*
+             * ADDRESS
+             */
+            3: {
+              cellWidth: 48,
             },
 
-            12: {
-              cellWidth: 18,
+            /*
+             * EMAIL
+             */
+            4: {
+              cellWidth: 52,
             },
 
-            13: {
-              cellWidth: 21,
+            /*
+             * SEX
+             */
+            5: {
+              cellWidth: 15,
+              halign:
+                'center',
             },
 
-            14: {
-              cellWidth: 20,
+            /*
+             * S/G
+             */
+            6: {
+              cellWidth: 25,
+              halign:
+                'center',
             },
 
-            15: {
-              cellWidth: 17,
+            /*
+             * ACCOMOD
+             */
+            7: {
+              cellWidth: 27,
             },
           },
 
           margin: {
-            left: 7,
-            right: 7,
+            left: 8,
+            right: 8,
           },
 
           didDrawPage: (
             data
           ) => {
-            /*
-             * Footer
-             */
             pdf.setFont(
               'helvetica',
               'normal'
@@ -946,7 +1424,12 @@ export default function EventRegistrationPrintout() {
             pdf.setFontSize(7)
 
             pdf.text(
-              `Disciples Church of God for All Nation • ${eventTitle}`,
+              `Total: ${filteredRegistrations.length} participant${
+                filteredRegistrations.length !==
+                1
+                  ? 's'
+                  : ''
+              }`,
               8,
               pageHeight - 5
             )
@@ -970,7 +1453,8 @@ export default function EventRegistrationPrintout() {
 
       const safeEventTitle =
         makeSafeFileName(
-          eventTitle
+          eventTitle ||
+            CONVENTION_NAME
         )
 
       const safeBranch =
@@ -980,13 +1464,11 @@ export default function EventRegistrationPrintout() {
 
       const safeCategory =
         makeSafeFileName(
-          formatAgeFilter(
-            selectedAgeRange
-          )
+          statusLabelForFile()
         )
 
       const filename =
-        `${safeEventTitle}-${safeBranch}-${safeCategory}-registrations.pdf`
+        `${safeEventTitle}-${safeBranch}-${safeCategory}-onsite-registration.pdf`
 
       pdf.save(filename)
 
@@ -1003,6 +1485,23 @@ export default function EventRegistrationPrintout() {
         'Failed to generate PDF'
       )
     }
+  }
+
+  /* =======================================================
+     PDF FILE STATUS LABEL
+  ======================================================= */
+
+  const statusLabelForFile = () => {
+    if (
+      selectedAgeRange ===
+      'adult' &&
+      selectedAdultClass !==
+        'all'
+    ) {
+      return `Adult-${selectedAdultClassLabel}`
+    }
+
+    return selectedCategoryLabel
   }
 
   /* =======================================================
@@ -1032,6 +1531,7 @@ export default function EventRegistrationPrintout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
+
           <Loader2
             className="w-10 h-10 animate-spin text-[#008080] mx-auto mb-4"
           />
@@ -1039,6 +1539,7 @@ export default function EventRegistrationPrintout() {
           <p className="text-gray-600">
             Loading event registrations...
           </p>
+
         </div>
       </div>
     )
@@ -1066,6 +1567,7 @@ export default function EventRegistrationPrintout() {
             <div className="flex items-center gap-3">
 
               <button
+                type="button"
                 onClick={() =>
                   navigate(-1)
                 }
@@ -1090,12 +1592,12 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-
             {/* ACTIONS */}
 
             <div className="flex gap-3">
 
               <button
+                type="button"
                 onClick={
                   printPage
                 }
@@ -1113,6 +1615,7 @@ export default function EventRegistrationPrintout() {
               </button>
 
               <button
+                type="button"
                 onClick={
                   downloadPDF
                 }
@@ -1137,7 +1640,6 @@ export default function EventRegistrationPrintout() {
 
       </div>
 
-
       {/* ===================================================
           MAIN
       =================================================== */}
@@ -1145,7 +1647,7 @@ export default function EventRegistrationPrintout() {
       <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6">
 
         {/* =================================================
-            FILTER CARD
+            FILTERS
         ================================================= */}
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 print:hidden">
@@ -1153,10 +1655,12 @@ export default function EventRegistrationPrintout() {
           <div className="flex items-center gap-3 mb-5">
 
             <div className="w-10 h-10 rounded-xl bg-[#008080]/10 flex items-center justify-center">
+
               <Users
                 size={20}
                 className="text-[#008080]"
               />
+
             </div>
 
             <div>
@@ -1166,23 +1670,25 @@ export default function EventRegistrationPrintout() {
               </h2>
 
               <p className="text-sm text-gray-500">
-                Select a branch and category
-                before downloading.
+                Select an assembly and
+                study group before
+                printing.
               </p>
 
             </div>
 
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-            {/* BRANCH */}
+            {/* =================================================
+                ASSEMBLY
+            ================================================= */}
 
             <div>
 
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Church Branch
+                Name of Assembly
               </label>
 
               <select
@@ -1198,7 +1704,7 @@ export default function EventRegistrationPrintout() {
               >
 
                 <option value="all">
-                  All Branches
+                  All Assemblies
                 </option>
 
                 {availableRealBranches.map(
@@ -1226,33 +1732,45 @@ export default function EventRegistrationPrintout() {
 
               </select>
 
-              <p className="text-xs text-gray-500 mt-2">
-                Branches come directly from
-                registrations for this event.
-                Other/unrecognised branches are
-                grouped under Others.
-              </p>
-
             </div>
 
-
-            {/* AGE RANGE */}
+            {/* =================================================
+                CATEGORY
+            ================================================= */}
 
             <div>
 
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Age / Category
+                Category
               </label>
 
               <select
                 value={
                   selectedAgeRange
                 }
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value =
+                    e.target
+                      .value as AgeFilter
+
                   setSelectedAgeRange(
-                    e.target.value as AgeFilter
+                    value
                   )
-                }
+
+                  /*
+                   * Reset Adult class
+                   * whenever category
+                   * changes.
+                   */
+                  if (
+                    value !==
+                    'adult'
+                  ) {
+                    setSelectedAdultClass(
+                      'all'
+                    )
+                  }
+                }}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-[#008080]/30"
               >
 
@@ -1264,28 +1782,58 @@ export default function EventRegistrationPrintout() {
                   Adult
                 </option>
 
-                <option value="children">
-                  Children
-                </option>
-
                 <option value="youth">
                   Youth
                 </option>
 
-                <option value="teen">
-                  Teenager
-                </option>
-
-                <option value="youth-teen">
-                  Youth / Teenager
+                <option value="children">
+                  Children
                 </option>
 
               </select>
 
-              <p className="text-xs text-gray-500 mt-2">
-                Youth / Teenager combines both
-                Youth and Teenager registrations.
-              </p>
+            </div>
+
+            {/* =================================================
+                ADULT CLASS
+            ================================================= */}
+
+            <div>
+
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Adult Class
+              </label>
+
+              <select
+                value={
+                  selectedAdultClass
+                }
+                onChange={(e) =>
+                  setSelectedAdultClass(
+                    e.target
+                      .value as AdultClassFilter
+                  )
+                }
+                disabled={
+                  selectedAgeRange !==
+                  'adult'
+                }
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white outline-none focus:ring-2 focus:ring-[#008080]/30 disabled:bg-gray-100 disabled:text-gray-400"
+              >
+
+                <option value="all">
+                  All Adult Classes
+                </option>
+
+                <option value="yoruba">
+                  Yoruba
+                </option>
+
+                <option value="english">
+                  English
+                </option>
+
+              </select>
 
             </div>
 
@@ -1293,38 +1841,93 @@ export default function EventRegistrationPrintout() {
 
         </section>
 
-
         {/* =================================================
-            SUMMARY
+            CATEGORY SUMMARY
         ================================================= */}
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 print:hidden">
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+            {/* TOTAL */}
 
             <div>
+
               <p className="text-sm text-gray-500">
-                Total Event Registrations
+                Total Registrations
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {registrations.length}
+                {
+                  registrations.length
+                }
               </p>
+
             </div>
 
+            {/* ADULT */}
 
             <div>
+
               <p className="text-sm text-gray-500">
-                Available Branches
+                Adults
               </p>
 
               <p className="text-2xl font-bold mt-1">
-                {availableRealBranches.length}
+                {
+                  categoryCounts.adult
+                }
               </p>
+
+              <p className="text-xs text-gray-400 mt-1">
+                Yoruba:{' '}
+                {
+                  categoryCounts.adultYoruba
+                }{' '}
+                • English:{' '}
+                {
+                  categoryCounts.adultEnglish
+                }
+              </p>
+
             </div>
 
+            {/* YOUTH */}
 
             <div>
+
+              <p className="text-sm text-gray-500">
+                Youth
+              </p>
+
+              <p className="text-2xl font-bold mt-1">
+                {
+                  categoryCounts.youth
+                }
+              </p>
+
+            </div>
+
+            {/* CHILDREN */}
+
+            <div>
+
+              <p className="text-sm text-gray-500">
+                Children
+              </p>
+
+              <p className="text-2xl font-bold mt-1">
+                {
+                  categoryCounts.children
+                }
+              </p>
+
+            </div>
+
+            {/* CURRENT */}
+
+            <div>
+
               <p className="text-sm text-gray-500">
                 Current Selection
               </p>
@@ -1334,67 +1937,70 @@ export default function EventRegistrationPrintout() {
                   filteredRegistrations.length
                 }
               </p>
-            </div>
 
-
-            <div>
-              <p className="text-sm text-gray-500">
-                Selected Branch
-              </p>
-
-              <p className="font-bold mt-2 truncate">
-                {
-                  selectedBranchLabel
-                }
-              </p>
             </div>
 
           </div>
 
         </section>
 
-
         {/* =================================================
-            PRINTABLE HEADER
+            PRINT PREVIEW
         ================================================= */}
 
-        <div className="hidden print:block mb-6">
+        <section className="bg-white shadow-sm border border-gray-100 p-6 md:p-8">
 
-          <div className="text-center">
+          {/* =================================================
+              HEADER
+          ================================================= */}
 
-            <h1 className="text-2xl font-bold uppercase">
-              Disciples Church Of God For All Nation
+          <div className="text-center mb-6">
+
+            <h1 className="text-xl md:text-2xl font-bold uppercase">
+              DISCIPLES CHURCH OF GOD FOR ALL NATIONS
             </h1>
 
-            <h2 className="text-lg font-semibold mt-1">
-              {selectedBranchLabel} Registration for{' '}
-              {eventTitle}
+            <h2 className="text-lg md:text-xl font-bold mt-2 uppercase">
+              {CONVENTION_NAME}
             </h2>
 
-            <p className="text-sm mt-2">
-              Category:{' '}
-              {formatAgeFilter(
-                selectedAgeRange
-              )}
+            <p className="font-semibold mt-1 uppercase">
+              THEME: {CONVENTION_THEME}
             </p>
 
-            <p className="text-sm">
-              Total Registrations:{' '}
-              {
-                filteredRegistrations.length
-              }
-            </p>
+            <div className="flex justify-between items-center mt-4 text-sm font-semibold">
+
+              <span>
+                REGISTRATION 2026 —{' '}
+                {REGISTRATION_DATE}
+              </span>
+
+              <span>
+                STATUS:{' '}
+
+                {selectedCategoryLabel.toUpperCase()}
+
+                {selectedAgeRange ===
+                  'adult' &&
+                  selectedAdultClass !==
+                    'all' &&
+                  ` — ${selectedAdultClassLabel.toUpperCase()}`}
+              </span>
+
+            </div>
+
+            <div className="text-left mt-2 font-bold uppercase">
+
+              NAME OF ASSEMBLY:{' '}
+              {selectedBranchLabel}
+
+            </div>
 
           </div>
 
-        </div>
-
-
-        {/* =================================================
-            TABLE
-        ================================================= */}
-
-        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* =================================================
+              TABLE
+          ================================================= */}
 
           <div className="overflow-x-auto">
 
@@ -1402,72 +2008,43 @@ export default function EventRegistrationPrintout() {
 
               <thead>
 
-                <tr className="bg-gray-100 text-left">
+                <tr>
 
-                  <th className="px-4 py-3 border">
-                    No.
+                  <th className="px-3 py-3 border border-black text-center">
+                    S/N
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Full Name
+                  <th className="px-3 py-3 border border-black text-left">
+                    NAME
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Email
+                  <th className="px-3 py-3 border border-black text-left">
+                    PHONE NO
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Phone
+                  <th className="px-3 py-3 border border-black text-left">
+                    ADDRESS
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Gender
+                  <th className="px-3 py-3 border border-black text-left">
+                    E-MAIL
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Age
+                  <th className="px-3 py-3 border border-black text-center">
+                    SEX
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Category
+                  <th className="px-3 py-3 border border-black text-center">
+                    S/G
                   </th>
 
-                  <th className="px-4 py-3 border">
-                    Branch
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Church
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Address
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Accommodation
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Room
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Preferred Group
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Study Group
-                  </th>
-
-                  <th className="px-4 py-3 border">
-                    Status
+                  <th className="px-3 py-3 border border-black text-center">
+                    ACCOMOD
                   </th>
 
                 </tr>
 
               </thead>
-
 
               <tbody>
 
@@ -1476,8 +2053,8 @@ export default function EventRegistrationPrintout() {
                   <tr>
 
                     <td
-                      colSpan={15}
-                      className="text-center py-16 text-gray-500"
+                      colSpan={8}
+                      className="text-center py-16 border border-black text-gray-500"
                     >
                       No registrations match
                       the selected filters.
@@ -1494,108 +2071,76 @@ export default function EventRegistrationPrintout() {
                         key={
                           registration.id
                         }
-                        className="hover:bg-gray-50"
                       >
 
-                        <td className="px-4 py-3 border">
+                        <td className="px-3 py-3 border border-black text-center">
                           {index + 1}
                         </td>
 
-                        <td className="px-4 py-3 border font-semibold whitespace-nowrap">
+                        <td className="px-3 py-3 border border-black font-medium">
                           {
                             registration.fullName ||
                             '-'
                           }
                         </td>
 
-                        <td className="px-4 py-3 border">
-                          {
-                            registration.email ||
-                            '-'
-                          }
-                        </td>
-
-                        <td className="px-4 py-3 border whitespace-nowrap">
+                        <td className="px-3 py-3 border border-black">
                           {
                             registration.phone ||
                             '-'
                           }
                         </td>
 
-                        <td className="px-4 py-3 border capitalize">
-                          {
-                            registration.gender ||
-                            '-'
-                          }
-                        </td>
-
-                        <td className="px-4 py-3 border">
-                          {
-                            registration.age ??
-                            '-'
-                          }
-                        </td>
-
-                        <td className="px-4 py-3 border">
-                          {formatCategory(
-                            registration.category
-                          )}
-                        </td>
-
-                        <td className="px-4 py-3 border whitespace-nowrap">
-                          {getDisplayBranch(
-                            registration,
-                            availableRealBranches
-                          )}
-                        </td>
-
-                        <td className="px-4 py-3 border">
-                          {
-                            registration.churchName ||
-                            '-'
-                          }
-                        </td>
-
-                        <td className="px-4 py-3 border">
+                        <td className="px-3 py-3 border border-black">
                           {
                             registration.address ||
-                            registration.otherBranch ||
                             '-'
                           }
                         </td>
 
-                        <td className="px-4 py-3 border">
-                          {registration.needsAccommodation
-                            ? 'Yes'
-                            : 'No'}
-                        </td>
-
-                        <td className="px-4 py-3 border">
+                        <td className="px-3 py-3 border border-black">
                           {
-                            registration.accommodationRoom ||
+                            registration.email ||
                             '-'
                           }
                         </td>
 
-                        <td className="px-4 py-3 border">
-                          {
-                            registration.studyGroupPreference ||
-                            '-'
-                          }
+                        <td className="px-3 py-3 border border-black text-center">
+                          {formatSex(
+                            registration.gender
+                          )}
                         </td>
 
-                        <td className="px-4 py-3 border">
-                          {
-                            registration.studyGroup ||
-                            '-'
-                          }
+                        {/* S/G */}
+
+                        <td className="px-3 py-3 border border-black text-center">
+
+                          <div className="font-semibold">
+                            {formatStudyGroup(
+                              registration
+                            )}
+                          </div>
+
+                          <div className="text-xs text-gray-600 mt-1">
+                            {formatStudyGroupCategory(
+                              registration
+                            )}
+
+                            {getStudyGroupCategory(
+                              registration
+                            ) ===
+                              'adult' &&
+                              ` — ${formatAdultClass(
+                                registration
+                              )}`}
+                          </div>
+
                         </td>
 
-                        <td className="px-4 py-3 border capitalize">
-                          {
-                            registration.status ||
-                            'registered'
-                          }
+                        <td className="px-3 py-3 border border-black text-center">
+                          {formatAccommodation(
+                            registration
+                          )}
                         </td>
 
                       </tr>
@@ -1613,7 +2158,6 @@ export default function EventRegistrationPrintout() {
 
       </main>
 
-
       {/* ===================================================
           PRINT STYLES
       =================================================== */}
@@ -1629,30 +2173,58 @@ export default function EventRegistrationPrintout() {
 
             body {
               background: white !important;
+              margin: 0 !important;
+              padding: 0 !important;
             }
 
             .print\\\\:hidden {
               display: none !important;
             }
 
-            .print\\\\:block {
-              display: block !important;
-            }
-
-            table {
-              width: 100% !important;
-              font-size: 8px !important;
-            }
-
-            th,
-            td {
-              padding: 4px !important;
+            main {
+              max-width: none !important;
+              padding: 0 !important;
+              margin: 0 !important;
             }
 
             section {
               box-shadow: none !important;
               border: none !important;
+              border-radius: 0 !important;
             }
+
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+              font-size: 8px !important;
+            }
+
+            th,
+            td {
+              border: 1px solid #000 !important;
+              padding: 5px !important;
+            }
+
+            thead {
+              display: table-header-group;
+            }
+
+            tr {
+              page-break-inside: avoid;
+            }
+
+            h1 {
+              font-size: 18px !important;
+            }
+
+            h2 {
+              font-size: 14px !important;
+            }
+
+            .overflow-x-auto {
+              overflow: visible !important;
+            }
+
           }
         `}
       </style>

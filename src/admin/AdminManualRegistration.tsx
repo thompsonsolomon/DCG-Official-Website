@@ -306,7 +306,13 @@ export default function AdminManualRegistration({
       return
     }
 
-   
+    // if (!accommodation) {
+    //   toast.error(
+    //     'Select an accommodation'
+    //   )
+    //   return
+    // }
+
     const selectedStudyGroup =
       getSelectedStudyGroup()
 
