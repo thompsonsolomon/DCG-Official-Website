@@ -34,6 +34,11 @@ type AdultClassFilter =
   | 'yoruba'
   | 'english'
 
+type AdultClass =
+  | 'yoruba'
+  | 'english'
+  | ''
+
 type Registration = {
   id: string
 
@@ -85,7 +90,7 @@ const REGISTRATION_DATE =
   'AUGUST 18TH – 22ND'
 
 /* =========================================================
-   TEXT NORMALIZATION
+   NORMALIZE
 ========================================================= */
 
 const normalize = (
@@ -98,7 +103,7 @@ const normalize = (
 }
 
 /* =========================================================
-   CATEGORY DETECTION
+   CATEGORY SOURCES
 ========================================================= */
 
 const getCategorySources = (
@@ -115,6 +120,10 @@ const getCategorySources = (
     .filter(Boolean)
 }
 
+/* =========================================================
+   CATEGORY DETECTION
+========================================================= */
+
 const getStudyGroupCategory = (
   registration: Registration
 ): AgeFilter | '' => {
@@ -122,6 +131,7 @@ const getStudyGroupCategory = (
     getCategorySources(registration)
 
   /* CHILDREN */
+
   const isChildren =
     sources.some((value) => {
       return (
@@ -135,6 +145,7 @@ const getStudyGroupCategory = (
   }
 
   /* YOUTH */
+
   const isYouth =
     sources.some((value) => {
       return (
@@ -149,6 +160,7 @@ const getStudyGroupCategory = (
   }
 
   /* ADULT */
+
   const isAdult =
     sources.some((value) => {
       return (
@@ -171,16 +183,20 @@ const getStudyGroupCategory = (
 
 const getAdultClass = (
   registration: Registration
-): AdultClassFilter => {
+): AdultClass => {
   const category =
-    getStudyGroupCategory(registration)
+    getStudyGroupCategory(
+      registration
+    )
 
   if (category !== 'adult') {
     return ''
   }
 
   const sources =
-    getCategorySources(registration)
+    getCategorySources(
+      registration
+    )
 
   if (
     sources.some((value) =>
@@ -207,9 +223,11 @@ const getAdultClass = (
 
 const formatStudyGroupCategory = (
   registration: Registration
-) => {
+): string => {
   const category =
-    getStudyGroupCategory(registration)
+    getStudyGroupCategory(
+      registration
+    )
 
   switch (category) {
     case 'adult':
@@ -232,9 +250,11 @@ const formatStudyGroupCategory = (
 
 const formatAdultClass = (
   registration: Registration
-) => {
+): string => {
   const adultClass =
-    getAdultClass(registration)
+    getAdultClass(
+      registration
+    )
 
   switch (adultClass) {
     case 'yoruba':
@@ -254,7 +274,7 @@ const formatAdultClass = (
 
 const formatStudyGroup = (
   registration: Registration
-) => {
+): string => {
   const raw =
     String(
       registration.studyGroup ?? ''
@@ -262,7 +282,9 @@ const formatStudyGroup = (
 
   if (!raw) {
     const category =
-      getStudyGroupCategory(registration)
+      getStudyGroupCategory(
+        registration
+      )
 
     if (category === 'children') {
       return 'Children'
@@ -274,13 +296,19 @@ const formatStudyGroup = (
 
     if (category === 'adult') {
       const adultClass =
-        getAdultClass(registration)
+        getAdultClass(
+          registration
+        )
 
-      if (adultClass === 'yoruba') {
+      if (
+        adultClass === 'yoruba'
+      ) {
         return 'Yoruba'
       }
 
-      if (adultClass === 'english') {
+      if (
+        adultClass === 'english'
+      ) {
         return 'English'
       }
     }
@@ -295,12 +323,12 @@ const formatStudyGroup = (
 }
 
 /* =========================================================
-   CATEGORY LABELS
+   FILTER LABELS
 ========================================================= */
 
 const formatAgeFilter = (
   filter: AgeFilter
-) => {
+): string => {
   switch (filter) {
     case 'adult':
       return 'Adult'
@@ -318,7 +346,7 @@ const formatAgeFilter = (
 
 const formatAdultClassFilter = (
   filter: AdultClassFilter
-) => {
+): string => {
   switch (filter) {
     case 'yoruba':
       return 'Yoruba'
@@ -337,7 +365,7 @@ const formatAdultClassFilter = (
 
 const getRawBranch = (
   registration: Registration
-) => {
+): string => {
   const branch =
     String(
       registration.branch ?? ''
@@ -357,9 +385,11 @@ const getRawBranch = (
 const getDisplayBranch = (
   registration: Registration,
   availableRealBranches: string[]
-) => {
+): string => {
   const rawBranch =
-    getRawBranch(registration)
+    getRawBranch(
+      registration
+    )
 
   if (!rawBranch) {
     return 'Others'
@@ -385,7 +415,7 @@ const getDisplayBranch = (
 
 const formatSex = (
   gender?: string
-) => {
+): string => {
   const value =
     normalize(gender)
 
@@ -412,7 +442,7 @@ const formatSex = (
 
 const formatAccommodation = (
   registration: Registration
-) => {
+): string => {
   if (
     registration.accommodationRoom &&
     normalize(
@@ -449,12 +479,12 @@ const formatAccommodation = (
 }
 
 /* =========================================================
-   FILE NAME
+   SAFE FILE NAME
 ========================================================= */
 
 const makeSafeFileName = (
   value: string
-) => {
+): string => {
   return value
     .replace(
       /[^a-z0-9]/gi,
@@ -522,7 +552,7 @@ export default function EventRegistrationPrintout() {
   )
 
   /* =======================================================
-     FETCH REGISTRATIONS
+     FETCH
   ======================================================= */
 
   useEffect(() => {
@@ -567,54 +597,6 @@ export default function EventRegistrationPrintout() {
             })
           ) as Registration[]
 
-        console.table(
-          data.map((item) => ({
-            name:
-              item.fullName ?? '',
-
-            studyGroup:
-              item.studyGroup ?? '',
-
-            preference:
-              item.studyGroupPreference ??
-              '',
-
-            categoryField:
-              item.category ?? '',
-
-            ageGroup:
-              item.ageGroup ?? '',
-
-            type:
-              item.type ?? '',
-
-            DETECTED_CATEGORY:
-              getStudyGroupCategory(
-                item
-              ),
-
-            DETECTED_ADULT_CLASS:
-              getAdultClass(item),
-          }))
-        )
-
-        const unclassified =
-          data.filter(
-            (item) =>
-              !getStudyGroupCategory(
-                item
-              )
-          )
-
-        if (
-          unclassified.length > 0
-        ) {
-          console.warn(
-            'UNCLASSIFIED REGISTRATIONS:',
-            unclassified
-          )
-        }
-
         setRegistrations(data)
 
         const firstRegistration =
@@ -654,12 +636,17 @@ export default function EventRegistrationPrintout() {
         registrations
           .map(
             (registration) =>
-              getRawBranch(registration)
+              getRawBranch(
+                registration
+              )
           )
           .filter(Boolean)
 
       const uniqueBranches =
-        new Map<string, string>()
+        new Map<
+          string,
+          string
+        >()
 
       branches.forEach(
         (branch) => {
@@ -667,7 +654,9 @@ export default function EventRegistrationPrintout() {
             normalize(branch)
 
           if (
-            !uniqueBranches.has(key)
+            !uniqueBranches.has(
+              key
+            )
           ) {
             uniqueBranches.set(
               key,
@@ -706,19 +695,22 @@ export default function EventRegistrationPrintout() {
               return true
             }
 
-            const exists =
-              availableRealBranches.some(
-                (branch) =>
-                  normalize(branch) ===
-                  normalize(rawBranch)
-              )
-
-            return !exists
+            return !availableRealBranches.some(
+              (branch) =>
+                normalize(
+                  branch
+                ) ===
+                normalize(
+                  rawBranch
+                )
+            )
           }
         )
 
       if (hasOthers) {
-        options.push(OTHER_BRANCH)
+        options.push(
+          OTHER_BRANCH
+        )
       }
 
       return options
@@ -728,12 +720,12 @@ export default function EventRegistrationPrintout() {
     ])
 
   /* =======================================================
-     CATEGORY FILTER
+     FILTER HELPERS
   ======================================================= */
 
   const matchesAgeRange = (
     registration: Registration
-  ) => {
+  ): boolean => {
     if (
       selectedAgeRange ===
       'all'
@@ -741,24 +733,17 @@ export default function EventRegistrationPrintout() {
       return true
     }
 
-    const category =
+    return (
       getStudyGroupCategory(
         registration
-      )
-
-    return (
-      category ===
+      ) ===
       selectedAgeRange
     )
   }
 
-  /* =======================================================
-     ADULT CLASS FILTER
-  ======================================================= */
-
   const matchesAdultClass = (
     registration: Registration
-  ) => {
+  ): boolean => {
     if (
       selectedAgeRange !==
       'adult'
@@ -847,22 +832,14 @@ export default function EventRegistrationPrintout() {
     ])
 
   /* =======================================================
-     TOTAL SELECTED PARTICIPANTS
+     SELECTED TOTAL
   ======================================================= */
 
-  /*
-   * THIS IS THE IMPORTANT VALUE.
-   *
-   * It represents the exact number of registrations
-   * that will appear in the generated/printed document.
-   *
-   * Every filter affects this number.
-   */
-  const selectedDocumentTotal =
+  const selectedTotal =
     filteredRegistrations.length
 
   /* =======================================================
-     SUMMARY COUNTS
+     CATEGORY COUNTS
   ======================================================= */
 
   const categoryCounts =
@@ -957,22 +934,19 @@ export default function EventRegistrationPrintout() {
         )
       : ''
 
-  /* =======================================================
-     FILE STATUS LABEL
-  ======================================================= */
+  const statusLabelForFile =
+    () => {
+      if (
+        selectedAgeRange ===
+          'adult' &&
+        selectedAdultClass !==
+          'all'
+      ) {
+        return `Adult-${selectedAdultClassLabel}`
+      }
 
-  const statusLabelForFile = () => {
-    if (
-      selectedAgeRange ===
-        'adult' &&
-      selectedAdultClass !==
-        'all'
-    ) {
-      return `Adult-${selectedAdultClassLabel}`
+      return selectedCategoryLabel
     }
-
-    return selectedCategoryLabel
-  }
 
   /* =======================================================
      DOWNLOAD PDF
@@ -980,13 +954,11 @@ export default function EventRegistrationPrintout() {
 
   const downloadPDF = () => {
     if (
-      selectedDocumentTotal ===
-      0
+      selectedTotal === 0
     ) {
       toast.error(
         'There are no registrations to download'
       )
-
       return
     }
 
@@ -1005,9 +977,7 @@ export default function EventRegistrationPrintout() {
       const pageHeight =
         pdf.internal.pageSize.getHeight()
 
-      /* ===================================================
-         HEADER
-      =================================================== */
+      /* HEADER */
 
       pdf.setTextColor(
         30,
@@ -1092,23 +1062,18 @@ export default function EventRegistrationPrintout() {
       )
 
       /* ===================================================
-         TOTAL SELECTED PARTICIPANTS
+         IMPORTANT: TOTAL SELECTED PARTICIPANTS
       =================================================== */
-
-      /*
-       * The total is now printed directly inside
-       * the document header.
-       */
 
       pdf.setFont(
         'helvetica',
         'bold'
       )
 
-      pdf.setFontSize(10)
+      pdf.setFontSize(11)
 
       pdf.text(
-        `TOTAL SELECTED PARTICIPANTS: ${selectedDocumentTotal}`,
+        `TOTAL NUMBER OF SELECTED PARTICIPANTS: ${selectedTotal}`,
         pageWidth - 8,
         39,
         {
@@ -1116,9 +1081,7 @@ export default function EventRegistrationPrintout() {
         }
       )
 
-      /* ===================================================
-         TABLE DATA
-      =================================================== */
+      /* TABLE DATA */
 
       const rows =
         filteredRegistrations.map(
@@ -1127,41 +1090,32 @@ export default function EventRegistrationPrintout() {
             index
           ) => [
             index + 1,
-
             registration.fullName ||
               '-',
-
             registration.phone ||
               '-',
-
             registration.address ||
               '-',
-
             registration.email ||
               '-',
-
             formatSex(
               registration.gender
             ),
-
             formatStudyGroup(
               registration
             ),
-
             formatAccommodation(
               registration
             ),
           ]
         )
 
-      /* ===================================================
-         TABLE
-      =================================================== */
+      /* TABLE */
 
       autoTable(
         pdf,
         {
-          startY: 44,
+          startY: 45,
 
           head: [
             [
@@ -1266,19 +1220,8 @@ export default function EventRegistrationPrintout() {
 
             pdf.setFontSize(7)
 
-            /*
-             * Keep the total in the footer too.
-             * This makes the total visible even when
-             * the table spans multiple pages.
-             */
-
             pdf.text(
-              `Total Selected: ${selectedDocumentTotal} participant${
-                selectedDocumentTotal !==
-                1
-                  ? 's'
-                  : ''
-              }`,
+              `TOTAL SELECTED PARTICIPANTS: ${selectedTotal}`,
               8,
               pageHeight - 5
             )
@@ -1296,9 +1239,7 @@ export default function EventRegistrationPrintout() {
         }
       )
 
-      /* ===================================================
-         FILE NAME
-      =================================================== */
+      /* FILE NAME */
 
       const safeEventTitle =
         makeSafeFileName(
@@ -1317,12 +1258,16 @@ export default function EventRegistrationPrintout() {
         )
 
       const filename =
-        `${safeEventTitle}-${safeBranch}-${safeCategory}-${selectedDocumentTotal}-participants-onsite-registration.pdf`
+        `${safeEventTitle}-${safeBranch}-${safeCategory}-${selectedTotal}-participants-onsite-registration.pdf`
 
       pdf.save(filename)
 
       toast.success(
-        'Registration PDF downloaded'
+        `PDF downloaded — ${selectedTotal} participant${
+          selectedTotal !== 1
+            ? 's'
+            : ''
+        }`
       )
     } catch (error) {
       console.error(
@@ -1342,8 +1287,7 @@ export default function EventRegistrationPrintout() {
 
   const printPage = () => {
     if (
-      selectedDocumentTotal ===
-      0
+      selectedTotal === 0
     ) {
       toast.error(
         'There are no registrations to print'
@@ -1363,7 +1307,6 @@ export default function EventRegistrationPrintout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-
           <Loader2
             className="w-10 h-10 animate-spin text-[#008080] mx-auto mb-4"
           />
@@ -1371,7 +1314,6 @@ export default function EventRegistrationPrintout() {
           <p className="text-gray-600">
             Loading event registrations...
           </p>
-
         </div>
       </div>
     )
@@ -1389,7 +1331,6 @@ export default function EventRegistrationPrintout() {
       =================================================== */}
 
       <div className="bg-white border-b sticky top-0 z-30 print:hidden">
-
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4">
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -1409,7 +1350,6 @@ export default function EventRegistrationPrintout() {
               </button>
 
               <div>
-
                 <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                   Registration Printout
                 </h1>
@@ -1417,7 +1357,6 @@ export default function EventRegistrationPrintout() {
                 <p className="text-sm text-gray-500">
                   {eventTitle}
                 </p>
-
               </div>
 
             </div>
@@ -1430,7 +1369,7 @@ export default function EventRegistrationPrintout() {
                   printPage
                 }
                 disabled={
-                  selectedDocumentTotal ===
+                  selectedTotal ===
                   0
                 }
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-gray-200 bg-white font-semibold hover:bg-gray-50 disabled:opacity-50"
@@ -1448,7 +1387,7 @@ export default function EventRegistrationPrintout() {
                   downloadPDF
                 }
                 disabled={
-                  selectedDocumentTotal ===
+                  selectedTotal ===
                   0
                 }
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#008080] text-white font-semibold hover:bg-[#006b6b] disabled:opacity-50"
@@ -1465,7 +1404,6 @@ export default function EventRegistrationPrintout() {
           </div>
 
         </div>
-
       </div>
 
       {/* ===================================================
@@ -1474,9 +1412,7 @@ export default function EventRegistrationPrintout() {
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6">
 
-        {/* =================================================
-            FILTERS
-        ================================================= */}
+        {/* FILTERS */}
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 print:hidden">
 
@@ -1659,7 +1595,7 @@ export default function EventRegistrationPrintout() {
         </section>
 
         {/* =================================================
-            CATEGORY SUMMARY
+            SUMMARY
         ================================================= */}
 
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6 print:hidden">
@@ -1667,7 +1603,6 @@ export default function EventRegistrationPrintout() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Total Registrations
               </p>
@@ -1675,11 +1610,9 @@ export default function EventRegistrationPrintout() {
               <p className="text-2xl font-bold mt-1">
                 {registrations.length}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Adults
               </p>
@@ -1698,11 +1631,9 @@ export default function EventRegistrationPrintout() {
                   categoryCounts.adultEnglish
                 }
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Youth
               </p>
@@ -1710,11 +1641,9 @@ export default function EventRegistrationPrintout() {
               <p className="text-2xl font-bold mt-1">
                 {categoryCounts.youth}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Children
               </p>
@@ -1722,23 +1651,18 @@ export default function EventRegistrationPrintout() {
               <p className="text-2xl font-bold mt-1">
                 {categoryCounts.children}
               </p>
-
             </div>
 
-            {/* CURRENT SELECTION */}
+            {/* SELECTED TOTAL */}
 
-            <div className="rounded-xl bg-[#008080]/10 px-4 py-3">
+            <div className="bg-[#008080]/10 rounded-xl p-3">
 
               <p className="text-sm text-[#006b6b] font-semibold">
-                Total Selected
+                Selected Participants
               </p>
 
-              <p className="text-3xl font-bold text-[#008080] mt-1">
-                {selectedDocumentTotal}
-              </p>
-
-              <p className="text-xs text-gray-500 mt-1">
-                Participants in document
+              <p className="text-3xl font-black text-[#008080] mt-1">
+                {selectedTotal}
               </p>
 
             </div>
@@ -1748,12 +1672,12 @@ export default function EventRegistrationPrintout() {
         </section>
 
         {/* =================================================
-            PRINT PREVIEW
+            DOCUMENT
         ================================================= */}
 
         <section className="bg-white shadow-sm border border-gray-100 p-6 md:p-8">
 
-          {/* HEADER */}
+          {/* DOCUMENT HEADER */}
 
           <div className="text-center mb-6">
 
@@ -1769,7 +1693,7 @@ export default function EventRegistrationPrintout() {
               THEME: {CONVENTION_THEME}
             </p>
 
-            <div className="flex justify-between items-center mt-4 text-sm font-semibold">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mt-4 text-sm font-semibold">
 
               <span>
                 REGISTRATION 2026 —{' '}
@@ -1790,31 +1714,25 @@ export default function EventRegistrationPrintout() {
 
             </div>
 
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mt-3">
 
-              <div className="text-left font-bold uppercase">
+              <div className="font-bold uppercase">
                 NAME OF ASSEMBLY:{' '}
                 {selectedBranchLabel}
               </div>
 
-              {/* =================================================
-                  TOTAL ON PRINTED DOCUMENT
-              ================================================= */}
+              {/* TOTAL IN DOCUMENT */}
 
-              <div className="text-right font-bold uppercase">
-                TOTAL SELECTED PARTICIPANTS:{' '}
-                <span className="text-[#008080]">
-                  {selectedDocumentTotal}
-                </span>
+              <div className="font-black text-lg uppercase">
+                TOTAL PARTICIPANTS:{' '}
+                {selectedTotal}
               </div>
 
             </div>
 
           </div>
 
-          {/* =================================================
-              TABLE
-          ================================================= */}
+          {/* TABLE */}
 
           <div className="overflow-x-auto">
 
@@ -1970,27 +1888,51 @@ export default function EventRegistrationPrintout() {
 
               </tbody>
 
+              {/* TOTAL ROW */}
+
+              {filteredRegistrations.length >
+                0 && (
+                <tfoot>
+
+                  <tr>
+
+                    <td
+                      colSpan={7}
+                      className="px-3 py-4 border border-black text-right font-black uppercase"
+                    >
+                      Total Number of Selected
+                      Participants
+                    </td>
+
+                    <td className="px-3 py-4 border border-black text-center font-black text-lg">
+                      {selectedTotal}
+                    </td>
+
+                  </tr>
+
+                </tfoot>
+              )}
+
             </table>
 
           </div>
 
-          {/* =================================================
-              DOCUMENT TOTAL
-          ================================================= */}
+          {/* DOCUMENT FOOTER */}
 
-          <div className="flex justify-end mt-4">
+          {selectedTotal > 0 && (
+            <div className="mt-5 pt-4 border-t border-black flex flex-col md:flex-row justify-between gap-2 font-bold text-sm uppercase">
 
-            <div className="border-2 border-black px-5 py-3 font-bold uppercase text-sm">
+              <span>
+                Total Selected Participants:{' '}
+                {selectedTotal}
+              </span>
 
-              TOTAL SELECTED PARTICIPANTS:{' '}
-
-              <span className="text-lg">
-                {selectedDocumentTotal}
+              <span>
+                {selectedBranchLabel}
               </span>
 
             </div>
-
-          </div>
+          )}
 
         </section>
 
@@ -2045,6 +1987,10 @@ export default function EventRegistrationPrintout() {
 
             thead {
               display: table-header-group;
+            }
+
+            tfoot {
+              display: table-row-group;
             }
 
             tr {
